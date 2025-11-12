@@ -1,0 +1,241 @@
+[
+  {
+    "id": "SOS1762964469013",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 10.7769,
+      "lon": 106.7009
+    },
+    "status": "accepted",
+    "note": "",
+    "createdAt": "2025-11-12T16:21:09.013Z",
+    "updatedAt": "2025-11-12T16:56:36.403Z",
+    "assignedStationId": "S0006"
+  },
+  {
+    "id": "SOS1762965410112",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 10.7769,
+      "lon": 106.7009
+    },
+    "status": "accepted",
+    "note": "",
+    "createdAt": "2025-11-12T16:36:50.112Z",
+    "updatedAt": "2025-11-12T16:57:10.243Z",
+    "assignedStationId": "S0006"
+  },
+  {
+    "id": "SOS1762966121244",
+    "userId": "U0001",
+    "type": "breakdown",
+    "severity": "high",
+    "location": {
+      "lat": 10.7769,
+      "lon": 106.7009
+    },
+    "status": "accepted",
+    "note": "",
+    "createdAt": "2025-11-12T16:48:41.244Z",
+    "updatedAt": "2025-11-12T16:57:13.487Z",
+    "assignedStationId": "S0006"
+  },
+  {
+    "id": "SOS1762966375989",
+    "userId": "U0001",
+    "type": "medical",
+    "severity": "critical",
+    "location": {
+      "lat": 10.7769,
+      "lon": 106.7009
+    },
+    "status": "accepted",
+    "note": "",
+    "createdAt": "2025-11-12T16:52:55.989Z",
+    "updatedAt": "2025-11-12T16:57:19.801Z",
+    "assignedStationId": "S0006"
+  },
+  {
+    "id": "SOS1762966401608",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 10.7769,
+      "lon": 106.7009
+    },
+    "status": "accepted",
+    "note": "",
+    "createdAt": "2025-11-12T16:53:21.608Z",
+    "updatedAt": "2025-11-12T16:57:22.620Z",
+    "assignedStationId": "S0006"
+  },
+  {
+    "id": "SOS1762966459657",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 10.7769,
+      "lon": 106.7009
+    },
+    "status": "accepted",
+    "note": "",
+    "createdAt": "2025-11-12T16:54:19.657Z",
+    "updatedAt": "2025-11-12T16:57:24.952Z",
+    "assignedStationId": "S0006"
+  },
+  {
+    "id": "SOS1762966675498",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "critical",
+    "location": {
+      "lat": 10.7769,
+      "lon": 106.7009
+    },
+    "status": "accepted",
+    "note": "đến ngay",
+    "createdAt": "2025-11-12T16:57:55.498Z",
+    "updatedAt": "2025-11-12T16:58:25.802Z",
+    "assignedStationId": "S0006"
+  },
+  {
+    "id": "SOS1762966857541",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 10.7769,
+      "lon": 106.7009
+    },
+    "status": "accepted",
+    "note": "abcdeg\n",
+    "createdAt": "2025-11-12T17:00:57.542Z",
+    "updatedAt": "2025-11-12T17:01:01.439Z",
+    "assignedStationId": "S0006"
+  },
+  {
+    "id": "SOS1762967037626",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 10.7769,
+      "lon": 106.7009
+    },
+    "status": "accepted",
+    "note": "1234",
+    "createdAt": "2025-11-12T17:03:57.626Z",
+    "updatedAt": "2025-11-12T17:04:01.084Z",
+    "assignedStationId": "S0006"
+  },
+  {
+    "id": "SOS1762967245742",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 10.7769,
+      "lon": 106.7009
+    },
+    "status": "accepted",
+    "note": "",
+    "createdAt": "2025-11-12T17:07:25.742Z",
+    "updatedAt": "2025-11-12T17:07:31.523Z",
+    "assignedStationId": "S0006"
+  },
+  {
+    "id": "SOS1762967590516",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 10.7769,
+      "lon": 106.7009
+    },
+    "status": "accepted",
+    "note": "",
+    "createdAt": "2025-11-12T17:13:10.517Z",
+    "updatedAt": "2025-11-12T17:15:57.840Z",
+    "assignedStationId": "S0006"
+  },
+  {
+    "id": "SOS1762967753724",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 10.7769,
+      "lon": 106.7009
+    },
+    "status": "accepted",
+    "note": "",
+    "createdAt": "2025-11-12T17:15:53.724Z",
+    "updatedAt": "2025-11-12T17:16:44.612Z",
+    "assignedStationId": "S0006"
+  },
+  {
+    "id": "SOS1762968693467",
+    "userId": "U0006",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 20.9813504,
+      "lon": 105.7718272
+    },
+    "status": "accepted",
+    "note": "123456",
+    "createdAt": "2025-11-12T17:31:33.467Z",
+    "updatedAt": "2025-11-12T17:31:42.928Z",
+    "assignedStationId": "S0006"
+  },
+  {
+    "id": "SOS1762969696367",
+    "userId": "U0006",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 20.9813504,
+      "lon": 105.7718272
+    },
+    "status": "accepted",
+    "note": "1234",
+    "createdAt": "2025-11-12T17:48:16.367Z",
+    "updatedAt": "2025-11-12T17:54:32.378Z",
+    "assignedStationId": "S0013"
+  },
+  {
+    "id": "SOS1762969988602",
+    "userId": "U0006",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 20.9813504,
+      "lon": 105.7718272
+    },
+    "status": "pending",
+    "note": "",
+    "createdAt": "2025-11-12T17:53:08.602Z",
+    "updatedAt": "2025-11-12T17:53:08.602Z"
+  },
+  {
+    "id": "SOS1762969999091",
+    "userId": "U0006",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 20.9813504,
+      "lon": 105.7718272
+    },
+    "status": "accepted",
+    "note": "",
+    "createdAt": "2025-11-12T17:53:19.091Z",
+    "updatedAt": "2025-11-12T17:55:12.201Z",
+    "assignedStationId": "S0013"
+  }
+]

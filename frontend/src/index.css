@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  width: 100%;
+  height: 100vh;
+}
+
+/* Ensure modals are always on top of Leaflet map */
+.leaflet-container {
+  z-index: 1;
+}
+
+/* Modal overlay should be above everything */
+[class*="fixed inset-0"][class*="z-"] {
+  position: fixed !important;
+  z-index: 9999 !important;
+}
+

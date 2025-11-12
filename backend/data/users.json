@@ -1,0 +1,68 @@
+[
+  {
+    "id": "U0001",
+    "name": "Nguyễn Văn An",
+    "email": "nguyenvanan@example.com",
+    "password": "password123",
+    "phone": "0912345678",
+    "address": "123 Đường ABC, Quận 1, TP.HCM",
+    "lat": 10.7769,
+    "lon": 106.7009,
+    "createdAt": "2025-11-12T16:18:47.451Z"
+  },
+  {
+    "id": "U0002",
+    "name": "Trần Thị Bình",
+    "email": "tranthibinh@example.com",
+    "password": "password123",
+    "phone": "0912345679",
+    "address": "456 Đường XYZ, Quận 3, TP.HCM",
+    "lat": 10.7829,
+    "lon": 106.6909,
+    "createdAt": "2025-11-12T16:18:47.451Z"
+  },
+  {
+    "id": "U0003",
+    "name": "Lê Văn Cường",
+    "email": "levancuong@example.com",
+    "password": "password123",
+    "phone": "0912345680",
+    "address": "789 Đường DEF, Quận 5, TP.HCM",
+    "lat": 10.7559,
+    "lon": 106.6679,
+    "createdAt": "2025-11-12T16:18:47.451Z"
+  },
+  {
+    "id": "U0004",
+    "name": "Phạm Thị Dung",
+    "email": "phamthidung@example.com",
+    "password": "password123",
+    "phone": "0912345681",
+    "address": "321 Đường GHI, Quận 7, TP.HCM",
+    "lat": 10.7309,
+    "lon": 106.7209,
+    "createdAt": "2025-11-12T16:18:47.451Z"
+  },
+  {
+    "id": "U0005",
+    "name": "Hoàng Văn Em",
+    "email": "hoangvanem@example.com",
+    "password": "password123",
+    "phone": "0912345682",
+    "address": "654 Đường JKL, Quận 10, TP.HCM",
+    "lat": 10.7739,
+    "lon": 106.6679,
+    "createdAt": "2025-11-12T16:18:47.451Z"
+  },
+  {
+    "id": "U0006",
+    "name": "Nguyễn Hoàng Tùng",
+    "email": "tung280304@gmail.com",
+    "password": "Tung03@1",
+    "phone": "0372444573",
+    "address": "",
+    "lat": 10.7769,
+    "lon": 106.7009,
+    "createdAt": "2025-11-12T17:31:07.353Z"
+  }
+]
