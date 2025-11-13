@@ -213,5 +213,72 @@
     "createdAt": "2025-11-13T12:10:41.205Z",
     "updatedAt": "2025-11-13T12:15:38.303Z",
     "assignedStationId": "S0002"
+  },
+  {
+    "id": "SOS1763045340157",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 21.1869,
+      "lon": 105.7748
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-13T14:49:00.157Z",
+    "updatedAt": "2025-11-13T14:49:35.920Z"
+  },
+  {
+    "id": "SOS1763056329299",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 21.0285,
+      "lon": 105.8542
+    },
+    "status": "done",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-13T17:52:09.299Z",
+    "updatedAt": "2025-11-13T17:52:59.098Z",
+    "assignedStationId": "S0002"
+  },
+  {
+    "id": "SOS1763056550396",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 21.0285,
+      "lon": 105.7542
+    },
+    "status": "done",
+    "note": "",
+    "rejectedStationIds": [
+      "S0005"
+    ],
+    "createdAt": "2025-11-13T17:55:50.397Z",
+    "updatedAt": "2025-11-13T17:58:40.243Z",
+    "assignedStationId": "S0002"
+  },
+  {
+    "id": "SOS1763057517195",
+    "userId": "U0001",
+    "type": "medical",
+    "severity": "medium",
+    "location": {
+      "lat": 21.0285,
+      "lon": 105.7542
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-13T18:11:57.195Z",
+    "updatedAt": "2025-11-13T18:12:14.873Z"
   }
 ]

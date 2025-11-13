@@ -14,6 +14,8 @@ interface UserProfile {
   description?: string;
   ratingAvg?: number;
   ratingCount?: number;
+  lastLocationSource?: 'hardware' | 'mobile';
+  lastLocationUpdatedAt?: string;
 }
 
 interface AuthState {

@@ -36,7 +36,6 @@ router.get('/entities', (req: Request, res: Response) => {
     try {
       const stations = readJson<Station>('stations.json');
       if (Array.isArray(stations)) {
-        console.log(`Loading ${stations.length} stations for map`);
         stations.forEach(station => {
           if (!station || !station.id || !station.stationName) {
             return;
@@ -61,7 +60,6 @@ router.get('/entities', (req: Request, res: Response) => {
             stationType: station.type
           });
         });
-        console.log(`Added ${entities.filter(e => e.type.includes('station')).length} stations to map entities`);
       }
     } catch (error: any) {
       console.error('Error loading stations:', error.message);

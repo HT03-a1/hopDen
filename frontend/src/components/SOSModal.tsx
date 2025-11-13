@@ -21,60 +21,21 @@ export default function SOSModal({ userId, userLocation, onClose, onSuccess }: S
   const [locationError, setLocationError] = useState('');
   const [gettingLocation, setGettingLocation] = useState(false);
 
-  // Lấy vị trí hiện tại từ thiết bị - CHỈ dùng GPS, không dùng fallback
+  // Ưu tiên dùng vị trí từ profile (ESP32 hoặc nhập thủ công), không lấy GPS từ laptop
   useEffect(() => {
-    if (!navigator.geolocation) {
-      setLocationError('Trình duyệt không hỗ trợ Geolocation. Vui lòng sử dụng trình duyệt khác.');
-      setCurrentLocation(null);
+    setGettingLocation(false);
+    
+    // Ưu tiên 1: Dùng vị trí từ profile (đã được ESP32 cập nhật hoặc nhập thủ công)
+    if (userLocation && userLocation.lat && userLocation.lon) {
+      setCurrentLocation(userLocation);
+      setLocationError('');
       return;
     }
-
-    setGettingLocation(true);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
-        console.log('GPS location obtained for SOS:', { lat, lon, accuracy: position.coords.accuracy });
-        
-        // Validate GPS coordinates
-        if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
-          console.error('Invalid GPS coordinates:', { lat, lon });
-          setLocationError('Vị trí GPS không hợp lệ. Vui lòng thử lại.');
-          setCurrentLocation(null);
-          setGettingLocation(false);
-          return;
-        }
-        
-        // Chỉ dùng GPS location, không dùng userLocation từ profile
-        setCurrentLocation({ lat, lon });
-        setLocationError('');
-        setGettingLocation(false);
-      },
-      (error) => {
-        console.error('Geolocation error:', error);
-        let errorMsg = 'Không thể lấy vị trí GPS. ';
-        if (error.code === 1) {
-          errorMsg += 'Vui lòng cho phép truy cập vị trí trong cài đặt trình duyệt.';
-        } else if (error.code === 2) {
-          errorMsg += 'Vị trí không khả dụng.';
-        } else if (error.code === 3) {
-          errorMsg += 'Hết thời gian chờ lấy vị trí. Vui lòng thử lại.';
-        } else {
-          errorMsg += 'Vui lòng thử lại.';
-        }
-        setLocationError(errorMsg);
-        // KHÔNG dùng userLocation từ profile, chỉ dùng GPS
-        setCurrentLocation(null);
-        setGettingLocation(false);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 20000,
-        maximumAge: 0,
-      }
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    
+    // Nếu không có vị trí từ profile, hiển thị lỗi
+    setLocationError('Không có vị trí từ ESP32. Vui lòng nhập thủ công vị trí trong thông tin cá nhân trước khi gửi SOS.');
+    setCurrentLocation(null);
+  }, [userLocation]);
 
   // Hiển thị các trường chọn sau 0.3s
   useEffect(() => {
@@ -103,10 +64,9 @@ export default function SOSModal({ userId, userLocation, onClose, onSuccess }: S
       return;
     }
 
-    // CHỈ dùng GPS location, không dùng userLocation từ profile
-    // Điều này đảm bảo SOS luôn dùng vị trí thực tế hiện tại, không phải vị trí cũ trong profile
+    // Dùng vị trí từ profile (ESP32 hoặc nhập thủ công)
     if (!currentLocation || !currentLocation.lat || !currentLocation.lon) {
-      setError('Không thể lấy vị trí GPS. Vui lòng cho phép truy cập vị trí và thử lại.');
+      setError('Không có vị trí. Vui lòng đảm bảo ESP32 đã gửi vị trí hoặc nhập thủ công vị trí trong thông tin cá nhân.');
       setLoading(false);
       return;
     }
@@ -123,7 +83,7 @@ export default function SOSModal({ userId, userLocation, onClose, onSuccess }: S
       return;
     }
 
-    console.log('Sending SOS with GPS location:', { lat, lon, source: 'GPS only' });
+    // Reduced logging
     
     setError('');
     setLoading(true);
@@ -167,7 +127,14 @@ export default function SOSModal({ userId, userLocation, onClose, onSuccess }: S
       return;
     }
 
-    const location = currentLocation || userLocation || { lat: 10.7769, lon: 106.7009 };
+    // Chỉ dùng vị trí từ profile, không có fallback
+    if (!currentLocation || !currentLocation.lat || !currentLocation.lon) {
+      setError('Không có vị trí. Vui lòng đảm bảo ESP32 đã gửi vị trí hoặc nhập thủ công vị trí trong thông tin cá nhân.');
+      setLoading(false);
+      return;
+    }
+    
+    const location = currentLocation;
 
     try {
       await apiClient.post('/sos', {
@@ -197,19 +164,17 @@ export default function SOSModal({ userId, userLocation, onClose, onSuccess }: S
           </div>
         )}
 
-        {gettingLocation && (
-          <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
-            📍 Đang lấy vị trí hiện tại từ thiết bị...
-          </div>
-        )}
         {locationError && (
           <div className="bg-orange-100 border border-orange-400 text-orange-700 px-4 py-3 rounded mb-4 text-sm">
             ⚠️ {locationError}
           </div>
         )}
-        {currentLocation && !gettingLocation && (
+        {currentLocation && (
           <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 text-sm">
             ✅ Đã lấy vị trí: {currentLocation.lat.toFixed(6)}, {currentLocation.lon.toFixed(6)}
+            <div className="text-xs mt-1 text-gray-600">
+              (Từ ESP32 hoặc nhập thủ công)
+            </div>
           </div>
         )}
         {loading && (

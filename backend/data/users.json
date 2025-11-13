@@ -5,9 +5,12 @@
     "email": "bacquandaibay@gmail.com",
     "password": "Quan2004",
     "phone": "0335587155",
-    "address": "",
-    "lat": 21.1869,
-    "lon": 105.7748,
-    "createdAt": "2025-11-13T04:35:38.668Z"
+    "address": "Lại Đà Đông Hội, Hà Nội",
+    "lat": 21.0285,
+    "lon": 105.7542,
+    "createdAt": "2025-11-13T16:44:19.873Z",
+    "lastLocationSource": "hardware",
+    "lastLocationUpdatedAt": "2025-11-13T18:44:06.858Z",
+    "lastHardwareLocationAt": "2025-11-13T18:44:06.858Z"
   }
 ]

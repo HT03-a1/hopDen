@@ -7,6 +7,10 @@ export interface User {
   address: string;
   lat: number;
   lon: number;
+  lastLocationSource?: 'hardware' | 'mobile';
+  lastLocationUpdatedAt?: string;
+  lastHardwareLocationAt?: string;
+  lastMobileLocationAt?: string;
   createdAt: string;
 }
 
@@ -74,6 +78,7 @@ export interface Telemetry {
   lat: number;
   lon: number;
   speed?: number;
+  source?: string;
   timestamp: string;
 }
 

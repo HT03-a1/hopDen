@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-leaflet';
-import { Icon, LatLng } from 'leaflet';
+import { MapContainer, TileLayer, useMap, Polyline } from 'react-leaflet';
+import { Icon } from 'leaflet';
 import { useAuthStore } from '../store/authStore';
 import apiClient from '../api/client';
-import { io, Socket } from 'socket.io-client';
+import { io } from 'socket.io-client';
 import 'leaflet/dist/leaflet.css';
 import UserSidePanel from '../components/UserSidePanel';
 import StationSidePanel from '../components/StationSidePanel';
@@ -11,6 +11,9 @@ import SOSModal from '../components/SOSModal';
 import StationDetailModal from '../components/StationDetailModal';
 import RatingModal from '../components/RatingModal';
 import BlinkingUserMarker from '../components/BlinkingUserMarker';
+// Logo cổ loa và CLBSTEM - sử dụng đường dẫn public
+const logoColoa = '/logo/logocoloa.png';
+const logoCLBSTEM = '/logo/CLBSTEM.jpg';
 
 // Fix default marker icon
 delete (Icon.Default.prototype as any)._getIconUrl;
@@ -58,40 +61,18 @@ export default function MapPage() {
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [selectedStation, setSelectedStation] = useState<any>(null);
   const [route, setRoute] = useState<RoutePoint[]>([]);
-  const [socket, setSocket] = useState<Socket | null>(null);
   const [loading, setLoading] = useState(true);
 
   const [userCurrentLocation, setUserCurrentLocation] = useState<[number, number] | null>(null);
 
-  // Get current location for user and update in backend
+  // Set userCurrentLocation từ profile (ESP32 hoặc nhập thủ công)
+  // Cập nhật mỗi khi profile thay đổi để đảm bảo SOSModal luôn có vị trí mới nhất
   useEffect(() => {
-    if (profile?.type === 'user' && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const lat = position.coords.latitude;
-          const lon = position.coords.longitude;
-          setUserCurrentLocation([lat, lon]);
-          
-          // Tự động cập nhật vị trí lên backend khi đăng nhập
-          try {
-            await apiClient.patch(`/auth/users/${profile.id}/location`, { lat, lon });
-            console.log('User location updated on login:', { lat, lon });
-            // Cập nhật profile trong store
-            updateProfile({ lat, lon });
-          } catch (error) {
-            console.error('Error updating user location on login:', error);
-          }
-        },
-        (error) => {
-          console.error('Error getting user location:', error);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-        }
-      );
+    if (profile?.type === 'user' && profile.lat && profile.lon) {
+      setUserCurrentLocation([profile.lat, profile.lon]);
+      // Reduced logging - removed debug logs
     }
-  }, [profile]);
+  }, [profile?.lat, profile?.lon, profile?.lastLocationUpdatedAt]);
 
   // Get map center based on user/station
   const getMapCenter = (): [number, number] => {
@@ -108,31 +89,56 @@ export default function MapPage() {
   // Load map entities
   useEffect(() => {
     loadMapData();
-  }, []);
+    
+    // Tự động reload map data mỗi 5 giây để đảm bảo vị trí luôn được cập nhật
+    // (fallback nếu WebSocket không hoạt động)
+    const interval = setInterval(() => {
+      if (profile?.type === 'user') {
+        loadMapData();
+      }
+    }, 5000);
+    
+    return () => clearInterval(interval);
+  }, [profile]);
 
   // Setup WebSocket
   useEffect(() => {
     const newSocket = io('http://localhost:3000');
-    setSocket(newSocket);
 
-    newSocket.on('sos:new', (data) => {
+    newSocket.on('sos:new', () => {
       loadMapData();
       loadSOSList();
     });
 
-    newSocket.on('sos:update', async (data) => {
-      console.log('📡 Received SOS update:', data);
+    newSocket.on('sos:update', async () => {
       // Tự động reload SOS list và map data khi có update
       await loadSOSList();
       loadMapData();
     });
 
     // Lắng nghe event riêng cho reassign để đảm bảo cập nhật ngay lập tức
-    newSocket.on('sos:reassigned', async (data) => {
-      console.log('🔄 Received SOS reassigned - tự động cập nhật trạm mới:', data);
+    newSocket.on('sos:reassigned', async () => {
       // Tự động reload SOS list và map data khi có reassign
       await loadSOSList();
       loadMapData();
+    });
+
+    newSocket.on('user:update', async (data) => {
+      const { profile: currentProfile, updateProfile } = useAuthStore.getState();
+      
+      // Luôn reload map data TRƯỚC để đảm bảo marker được cập nhật ngay lập tức
+      await loadMapData();
+      
+      if (currentProfile?.id === data.id) {
+        // Cập nhật đầy đủ thông tin vị trí trong store
+        updateProfile({ 
+          lat: data.lat, 
+          lon: data.lon,
+          lastLocationSource: data.lastLocationSource,
+          lastLocationUpdatedAt: data.lastLocationUpdatedAt
+        });
+        setUserCurrentLocation([data.lat, data.lon]);
+      }
     });
 
     return () => {
@@ -146,7 +152,7 @@ export default function MapPage() {
       setEntities(response.data);
       setLoading(false);
     } catch (error) {
-      console.error('Error loading map data:', error);
+      console.error('❌ Error loading map data:', error);
       setLoading(false);
     }
   };
@@ -415,28 +421,72 @@ export default function MapPage() {
 
   return (
     <div className="w-full h-screen flex flex-col">
-      {/* Top Bar */}
-      <div className="bg-blue-600 text-white px-6 py-4 flex justify-between items-center shadow-md">
-        <div className="flex items-center space-x-4">
-          <h1 className="text-2xl font-bold">Hộp đen thông minh</h1>
+      {/* Top Bar - Enhanced Design */}
+      <div className="bg-gradient-to-r from-slate-700 via-slate-800 to-slate-900 text-white px-6 py-4 flex justify-between items-center shadow-lg border-b-2 border-slate-950">
+        <div className="flex items-center space-x-6">
+          {/* Logo/Icon Section */}
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2">
+              <div className="bg-white/20 backdrop-blur-sm p-2 rounded-lg flex items-center justify-center">
+                <img 
+                  src={logoColoa} 
+                  alt="Logo cổ loa" 
+                  className="w-8 h-8 object-contain"
+                />
+              </div>
+              <div className="bg-white/20 backdrop-blur-sm p-2 rounded-lg flex items-center justify-center">
+                <img 
+                  src={logoCLBSTEM} 
+                  alt="Logo CLBSTEM" 
+                  className="w-8 h-8 object-contain"
+                />
+              </div>
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight">Hộp đen thông minh</h1>
+          </div>
+          
+          {/* User/Station Info */}
           {profile && (
-            <div className="text-sm">
+            <div className="flex items-center space-x-3 pl-4 border-l border-white/30">
               {profile.type === 'user' ? (
                 <>
-                  <span className="font-semibold">{profile.name}</span>
-                  <span className="ml-2 text-blue-200">ID: {profile.id}</span>
+                  <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    <span className="font-semibold text-sm">{profile.name}</span>
+                    <span className="text-slate-200 text-xs font-mono bg-white/10 px-2 py-0.5 rounded">ID: {profile.id}</span>
+                  </div>
                 </>
               ) : (
-                <span className="font-semibold">{profile.stationName}</span>
+                <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                  {profile.type === 'medical' ? (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  )}
+                  <span className="font-semibold text-sm">{profile.stationName}</span>
+                  <span className="text-slate-200 text-xs">{profile.type === 'medical' ? '🏥 Trạm y tế' : '🚑 Trạm cứu hộ'}</span>
+                </div>
               )}
             </div>
           )}
         </div>
+        
+        {/* Logout Button */}
         <button
           onClick={logout}
-          className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-md transition"
+          className="flex items-center space-x-2 bg-red-500 hover:bg-red-600 active:bg-red-700 px-4 py-2 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95"
         >
-          Đăng xuất
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          <span className="font-medium">Đăng xuất</span>
         </button>
       </div>
 

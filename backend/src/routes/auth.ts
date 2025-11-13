@@ -209,6 +209,11 @@ router.post('/register-station', (req: Request, res: Response) => {
 router.patch('/users/:id/location', (req: Request, res: Response) => {
   const { id } = req.params;
   const { lat, lon } = req.body;
+  
+  // Reduced logging - only log in development
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`[AUTH] PATCH /users/${id}/location - Request received:`, { id, lat, lon });
+  }
 
   if (lat === undefined || lon === undefined) {
     return res.status(400).json({ error: 'Thiếu thông tin vị trí' });
@@ -233,9 +238,31 @@ router.patch('/users/:id/location', (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Không tìm thấy người dùng' });
     }
 
+    const now = new Date().toISOString();
     users[userIndex].lat = latNum;
     users[userIndex].lon = lonNum;
+    // Set source là 'mobile' khi nhập thủ công (sẽ bị ghi đè khi ESP32 gửi dữ liệu)
+    users[userIndex].lastLocationSource = 'mobile';
+    users[userIndex].lastLocationUpdatedAt = now;
+    users[userIndex].lastMobileLocationAt = now;
     writeJson('users.json', users);
+    
+    // Only log in development
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[AUTH] ✅ Updated user ${id} location (manual input):`, { lat: latNum, lon: lonNum, source: 'mobile' });
+    }
+
+    // Emit WebSocket event để frontend cập nhật
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('user:update', {
+        id: users[userIndex].id,
+        lat: users[userIndex].lat,
+        lon: users[userIndex].lon,
+        lastLocationSource: 'mobile',
+        lastLocationUpdatedAt: now
+      });
+    }
 
     return res.json({
       id: users[userIndex].id,
@@ -245,6 +272,8 @@ router.patch('/users/:id/location', (req: Request, res: Response) => {
       address: users[userIndex].address,
       lat: users[userIndex].lat,
       lon: users[userIndex].lon,
+      lastLocationSource: users[userIndex].lastLocationSource,
+      lastLocationUpdatedAt: users[userIndex].lastLocationUpdatedAt,
       type: 'user'
     });
   } catch (error) {

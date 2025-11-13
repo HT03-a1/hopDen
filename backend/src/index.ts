@@ -8,7 +8,7 @@ import sosRoutes from './routes/sos';
 import stationRoutes from './routes/stations';
 import ratingRoutes from './routes/ratings';
 import telemetryRoutes from './routes/telemetry';
-import { initializeData, generateTaiKhoanFile } from './services/dataService';
+import { initializeData } from './services/dataService';
 
 const app = express();
 const httpServer = createServer(app);
@@ -29,20 +29,21 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Initialize data files on startup
+// Initialize data files on startup (includes generateTaiKhoanFile)
 initializeData();
 
-// Generate taikhoan.md on startup (will update if data exists)
-setTimeout(() => {
-  generateTaiKhoanFile();
-}, 1000);
-
-// Socket.IO connection
+// Socket.IO connection (reduced logging for production)
 io.on('connection', (socket) => {
-  console.log('Client connected:', socket.id);
+  // Only log in development
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('Client connected:', socket.id);
+  }
 
   socket.on('disconnect', () => {
-    console.log('Client disconnected:', socket.id);
+    // Only log in development
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Client disconnected:', socket.id);
+    }
   });
 });
 

@@ -16,9 +16,21 @@ export function readJson<T>(filename: string): T[] {
       return [];
     }
     const data = fs.readFileSync(filePath, 'utf-8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error(`Error reading ${filename}:`, error);
+    if (!data || data.trim() === '') {
+      console.warn(`⚠️ Warning: ${filename} is empty - file exists but has no content`);
+      return [];
+    }
+    const parsed = JSON.parse(data);
+    if (!Array.isArray(parsed)) {
+      console.error(`❌ Error: ${filename} does not contain a valid array. Content: ${data.substring(0, 100)}`);
+      return [];
+    }
+    return parsed;
+  } catch (error: any) {
+    console.error(`❌ CRITICAL: Error reading ${filename}:`, error.message);
+    console.error(`   File path: ${filePath}`);
+    console.error(`   This may cause data loss! Please check the file manually.`);
+    // Vẫn trả về [] để app không crash, nhưng log rõ ràng để debug
     return [];
   }
 }
@@ -26,6 +38,14 @@ export function readJson<T>(filename: string): T[] {
 export function writeJson<T>(filename: string, data: T[]): void {
   const filePath = path.join(DATA_DIR, filename);
   try {
+    // Cảnh báo nếu đang ghi mảng rỗng vào file đã có dữ liệu
+    if (data.length === 0 && fs.existsSync(filePath)) {
+      const existingData = fs.readFileSync(filePath, 'utf-8');
+      if (existingData && existingData.trim() !== '' && existingData.trim() !== '[]') {
+        console.warn(`⚠️ WARNING: Writing empty array to ${filename} which previously had data!`);
+        console.warn(`   Previous content length: ${existingData.length} bytes`);
+      }
+    }
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
   } catch (error) {
     console.error(`Error writing ${filename}:`, error);
@@ -35,9 +55,10 @@ export function writeJson<T>(filename: string, data: T[]): void {
 
 export function initializeData(): void {
   // Initialize users.json
+  // CHỈ tạo seed data khi file KHÔNG tồn tại, KHÔNG tạo lại khi file rỗng (người dùng có thể đã xóa)
   const usersPath = path.join(DATA_DIR, 'users.json');
   if (!fs.existsSync(usersPath)) {
-    const seedUsers = [
+    const seedUsers: User[] = [
       {
         id: 'U0001',
         name: 'Nguyễn Văn An',
@@ -95,7 +116,14 @@ export function initializeData(): void {
       }
     ];
     writeJson('users.json', seedUsers);
-    console.log('Created users.json with seed data');
+    console.log('Created users.json with seed data (file did not exist)');
+  } else {
+    const users = readJson<User>('users.json');
+    if (users.length > 0) {
+      console.log(`users.json already exists with ${users.length} user(s) - skipping seed data creation`);
+    } else {
+      console.log('users.json exists but is empty - keeping it empty (user may have deleted all users)');
+    }
   }
 
   // Initialize stations.json
@@ -616,7 +644,8 @@ export function initializeData(): void {
     }
   });
 
-  // Generate taikhoan.md file
+  // Generate taikhoan.md file (only once during initialization)
+  // Removed duplicate call from index.ts
   generateTaiKhoanFile();
 }
 
