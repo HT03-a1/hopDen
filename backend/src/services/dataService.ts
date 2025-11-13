@@ -204,7 +204,7 @@ export function initializeData(): void {
       {
         id: 'S0007',
         stationName: 'Trạm sửa xe nhanh Quận 3',
-        type: 'repair',
+        type: 'rescue', // Đã gộp repair vào rescue
         email: 'suaxeq3@example.com',
         password: 'password123',
         phone: '02839301234',
@@ -236,7 +236,7 @@ export function initializeData(): void {
       {
         id: 'S0009',
         stationName: 'Garage sửa xe Quận 7',
-        type: 'repair',
+        type: 'rescue', // Đã gộp repair vào rescue
         email: 'garageq7@example.com',
         password: 'password123',
         phone: '02854111234',
@@ -430,7 +430,7 @@ export function initializeData(): void {
       {
         id: 'S0021',
         stationName: 'Garage sửa xe Hoàn Kiếm',
-        type: 'repair',
+        type: 'rescue', // Đã gộp repair vào rescue
         email: 'garagehoankiem@example.com',
         password: 'password123',
         phone: '02438251234',
@@ -446,7 +446,7 @@ export function initializeData(): void {
       {
         id: 'S0022',
         stationName: 'Trạm sửa xe Đống Đa',
-        type: 'repair',
+        type: 'rescue', // Đã gộp repair vào rescue
         email: 'suaxedongda@example.com',
         password: 'password123',
         phone: '02438252345',
@@ -462,7 +462,7 @@ export function initializeData(): void {
       {
         id: 'S0023',
         stationName: 'Garage Cầu Giấy',
-        type: 'repair',
+        type: 'rescue', // Đã gộp repair vào rescue
         email: 'garagecaugiay@example.com',
         password: 'password123',
         phone: '02438253456',
@@ -478,7 +478,7 @@ export function initializeData(): void {
       {
         id: 'S0024',
         stationName: 'Trạm sửa xe Hai Bà Trưng',
-        type: 'repair',
+        type: 'rescue', // Đã gộp repair vào rescue
         email: 'suaxehaibatrung@example.com',
         password: 'password123',
         phone: '02438254567',
@@ -494,7 +494,7 @@ export function initializeData(): void {
       {
         id: 'S0025',
         stationName: 'Garage Ba Đình',
-        type: 'repair',
+        type: 'rescue', // Đã gộp repair vào rescue
         email: 'garagebadinh@example.com',
         password: 'password123',
         phone: '02438255678',
@@ -510,7 +510,7 @@ export function initializeData(): void {
       {
         id: 'S0026',
         stationName: 'Trạm sửa xe Thanh Xuân',
-        type: 'repair',
+        type: 'rescue', // Đã gộp repair vào rescue
         email: 'suaxethanhxuan@example.com',
         password: 'password123',
         phone: '02438256789',
@@ -526,7 +526,7 @@ export function initializeData(): void {
       {
         id: 'S0027',
         stationName: 'Garage Long Biên',
-        type: 'repair',
+        type: 'rescue', // Đã gộp repair vào rescue
         email: 'garagelongbien@example.com',
         password: 'password123',
         phone: '02438257890',
@@ -542,7 +542,7 @@ export function initializeData(): void {
       {
         id: 'S0028',
         stationName: 'Trạm sửa xe Tây Hồ',
-        type: 'repair',
+        type: 'rescue', // Đã gộp repair vào rescue
         email: 'suaxetayho@example.com',
         password: 'password123',
         phone: '02438258901',
@@ -558,7 +558,7 @@ export function initializeData(): void {
       {
         id: 'S0029',
         stationName: 'Garage Hoàng Mai',
-        type: 'repair',
+        type: 'rescue', // Đã gộp repair vào rescue
         email: 'garagehoangmai@example.com',
         password: 'password123',
         phone: '02438259012',
@@ -574,7 +574,7 @@ export function initializeData(): void {
       {
         id: 'S0030',
         stationName: 'Trạm sửa xe Nam Từ Liêm',
-        type: 'repair',
+        type: 'rescue', // Đã gộp repair vào rescue
         email: 'suaxenamtuliem@example.com',
         password: 'password123',
         phone: '02438250123',
@@ -661,21 +661,13 @@ export function generateTaiKhoanFile(): void {
     
     content += '\n---\n\n';
     
-    // Repair stations section
-    const repairStations = stations.filter(s => s.type === 'repair');
-    content += '## 🔧 Trạm sửa xe (Repair Stations)\n\n';
-    content += '| ID | Tên trạm | Email | Mật khẩu | Số điện thoại | Địa chỉ |\n';
-    content += '|----|----------|-------|----------|---------------|----------|\n';
-    repairStations.forEach(station => {
-      content += `| ${station.id} | ${station.stationName} | ${station.email} | ${station.password} | ${station.phone} | ${station.address} |\n`;
-    });
+    // Repair stations đã được gộp vào rescue stations, không cần section riêng
     
     content += '\n---\n\n';
     content += '## 📝 Hướng dẫn đăng nhập\n\n';
     content += '1. **Người dùng**: Chọn role "Người dùng" khi đăng nhập\n';
     content += '2. **Trạm y tế**: Chọn role "Trạm y tế" khi đăng nhập\n';
-    content += '3. **Trạm cứu hộ**: Chọn role "Trạm cứu hộ" khi đăng nhập\n';
-    content += '4. **Trạm sửa xe**: Chọn role "Trạm cứu hộ" khi đăng nhập (vì type là "repair" nhưng login dùng "rescue_station")\n';
+    content += '3. **Trạm cứu hộ**: Chọn role "Trạm cứu hộ" khi đăng nhập (bao gồm cả trạm sửa xe, đã được gộp vào trạm cứu hộ)\n';
     
     fs.writeFileSync(taikhoanPath, content, 'utf-8');
     console.log('Created taikhoan.md with all account information');

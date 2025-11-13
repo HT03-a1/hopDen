@@ -39,7 +39,7 @@ router.post('/login', (req: Request, res: Response) => {
       });
     } else if (role === 'medical_station' || role === 'rescue_station') {
       const stations = readJson<Station>('stations.json');
-      const stationType = role === 'medical_station' ? 'medical' : (role === 'rescue_station' ? 'rescue' : 'repair');
+      const stationType = role === 'medical_station' ? 'medical' : 'rescue'; // Đã gộp repair vào rescue
       const station = stations.find(
         s => s.email === email && s.password === password && s.type === stationType
       );
@@ -143,7 +143,7 @@ router.post('/register-station', (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Vui lòng điền đầy đủ thông tin' });
   }
 
-  if (!['medical', 'rescue', 'repair'].includes(type)) {
+  if (!['medical', 'rescue'].includes(type)) {
     return res.status(400).json({ error: 'Loại trạm không hợp lệ' });
   }
 
@@ -163,7 +163,7 @@ router.post('/register-station', (req: Request, res: Response) => {
     const newStation: Station = {
       id: newId,
       stationName,
-      type: type as 'medical' | 'rescue' | 'repair',
+      type: type as 'medical' | 'rescue', // Đã gộp repair vào rescue
       email,
       password,
       phone,
@@ -201,6 +201,54 @@ router.post('/register-station', (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Register station error:', error);
+    return res.status(500).json({ error: 'Lỗi server' });
+  }
+});
+
+// Update user location
+router.patch('/users/:id/location', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { lat, lon } = req.body;
+
+  if (lat === undefined || lon === undefined) {
+    return res.status(400).json({ error: 'Thiếu thông tin vị trí' });
+  }
+
+  const latNum = parseFloat(lat);
+  const lonNum = parseFloat(lon);
+
+  if (isNaN(latNum) || isNaN(lonNum)) {
+    return res.status(400).json({ error: 'Tọa độ không hợp lệ' });
+  }
+
+  if (latNum < -90 || latNum > 90 || lonNum < -180 || lonNum > 180) {
+    return res.status(400).json({ error: 'Tọa độ nằm ngoài phạm vi hợp lệ' });
+  }
+
+  try {
+    const users = readJson<User>('users.json');
+    const userIndex = users.findIndex(u => u.id === id);
+
+    if (userIndex === -1) {
+      return res.status(404).json({ error: 'Không tìm thấy người dùng' });
+    }
+
+    users[userIndex].lat = latNum;
+    users[userIndex].lon = lonNum;
+    writeJson('users.json', users);
+
+    return res.json({
+      id: users[userIndex].id,
+      name: users[userIndex].name,
+      email: users[userIndex].email,
+      phone: users[userIndex].phone,
+      address: users[userIndex].address,
+      lat: users[userIndex].lat,
+      lon: users[userIndex].lon,
+      type: 'user'
+    });
+  } catch (error) {
+    console.error('Update user location error:', error);
     return res.status(500).json({ error: 'Lỗi server' });
   }
 });

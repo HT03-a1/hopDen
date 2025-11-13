@@ -36,8 +36,7 @@ export default function StationDetailModal({ station, onClose, onContact }: Stat
           <div>
             <span className="font-semibold">Loại trạm:</span>{' '}
             {(station.type === 'medical_station' || station.stationType === 'medical') && '🏥 Trạm y tế'}
-            {(station.type === 'rescue_station' || station.stationType === 'rescue') && '🔧 Trạm cứu hộ'}
-            {(station.type === 'repair_station' || station.stationType === 'repair') && '🔨 Trạm sửa xe'}
+            {(station.type === 'rescue_station' || station.stationType === 'rescue') && '🔧 Trạm cứu hộ (bao gồm sửa xe)'}
             {!station.type && !station.stationType && <span className="text-gray-500">Chưa xác định</span>}
           </div>
           <div>

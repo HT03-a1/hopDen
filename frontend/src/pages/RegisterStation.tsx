@@ -13,7 +13,7 @@ export default function RegisterStation() {
     lat: 10.7769,
     lon: 106.7009,
     openHours: '24/7',
-    type: 'medical' as 'medical' | 'rescue' | 'repair',
+    type: 'medical' as 'medical' | 'rescue', // Đã gộp repair vào rescue
     description: '',
   });
   const [error, setError] = useState('');
@@ -74,8 +74,7 @@ export default function RegisterStation() {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="medical">Trạm y tế</option>
-              <option value="rescue">Trạm cứu hộ</option>
-              <option value="repair">Trạm sửa xe</option>
+              <option value="rescue">Trạm cứu hộ (bao gồm sửa xe)</option>
             </select>
           </div>
 

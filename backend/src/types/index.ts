@@ -13,7 +13,7 @@ export interface User {
 export interface Station {
   id: string;
   stationName: string;
-  type: 'medical' | 'rescue' | 'repair';
+  type: 'medical' | 'rescue'; // Đã gộp repair vào rescue
   email: string;
   password: string;
   phone: string;
@@ -50,6 +50,8 @@ export interface SOS {
   };
   status: 'pending' | 'accepted' | 'on_route' | 'done' | 'cancelled';
   assignedStationId?: string;
+  rejectedStationIds?: string[]; // Danh sách các trạm đã từ chối trong chu kỳ SOS này
+  readyStationIds?: string[]; // Danh sách các trạm đã ấn "Sẵn sàng nhận nhiệm vụ"
   note?: string;
   createdAt: string;
   updatedAt: string;
@@ -76,7 +78,7 @@ export interface Telemetry {
 }
 
 export interface MapEntity {
-  type: 'user' | 'medical_station' | 'rescue_station' | 'repair_station' | 'device' | 'sos';
+  type: 'user' | 'medical_station' | 'rescue_station' | 'device' | 'sos'; // Đã gộp repair_station vào rescue_station
   id: string;
   name: string;
   lat: number;

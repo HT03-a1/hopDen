@@ -45,7 +45,7 @@ router.get('/nearest', (req: Request, res: Response) => {
     if (stationType === 'medical') {
       filteredStations = stations.filter(s => s.type === 'medical');
     } else if (stationType === 'rescue') {
-      filteredStations = stations.filter(s => s.type === 'rescue' || s.type === 'repair');
+      filteredStations = stations.filter(s => s.type === 'rescue'); // Đã gộp repair vào rescue
     }
 
     console.log(`Filtered stations by type ${stationType}: ${filteredStations.length}`);
@@ -101,6 +101,27 @@ router.get('/', (req: Request, res: Response) => {
     res.json(stations);
   } catch (error) {
     console.error('Get stations error:', error);
+    res.status(500).json({ error: 'Lỗi server' });
+  }
+});
+
+// Get station by ID
+router.get('/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    const stations = readJson<Station>('stations.json');
+    const station = stations.find(s => s.id === id);
+
+    if (!station) {
+      return res.status(404).json({ error: 'Không tìm thấy trạm' });
+    }
+
+    // Không trả về password
+    const { password, ...stationWithoutPassword } = station;
+    res.json(stationWithoutPassword);
+  } catch (error) {
+    console.error('Get station by ID error:', error);
     res.status(500).json({ error: 'Lỗi server' });
   }
 });

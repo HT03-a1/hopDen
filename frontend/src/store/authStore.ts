@@ -9,7 +9,7 @@ interface UserProfile {
   address?: string;
   lat?: number;
   lon?: number;
-  type: 'user' | 'medical' | 'rescue' | 'repair';
+  type: 'user' | 'medical' | 'rescue'; // Đã gộp repair vào rescue
   openHours?: string;
   description?: string;
   ratingAvg?: number;
@@ -20,6 +20,7 @@ interface AuthState {
   token: string | null;
   profile: UserProfile | null;
   setAuth: (token: string, profile: UserProfile) => void;
+  updateProfile: (updates: Partial<UserProfile>) => void;
   logout: () => void;
 }
 
@@ -39,12 +40,21 @@ const loadAuth = () => {
 
 const initialState = loadAuth();
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   token: initialState.token,
   profile: initialState.profile,
   setAuth: (token, profile) => {
     localStorage.setItem('auth-storage', JSON.stringify({ token, profile }));
     set({ token, profile });
+  },
+  updateProfile: (updates) => {
+    const currentProfile = get().profile;
+    if (currentProfile) {
+      const updatedProfile = { ...currentProfile, ...updates };
+      const token = get().token;
+      localStorage.setItem('auth-storage', JSON.stringify({ token, profile: updatedProfile }));
+      set({ profile: updatedProfile });
+    }
   },
   logout: () => {
     localStorage.removeItem('auth-storage');

@@ -21,35 +21,55 @@ export default function SOSModal({ userId, userLocation, onClose, onSuccess }: S
   const [locationError, setLocationError] = useState('');
   const [gettingLocation, setGettingLocation] = useState(false);
 
-  // Lấy vị trí hiện tại từ thiết bị
+  // Lấy vị trí hiện tại từ thiết bị - CHỈ dùng GPS, không dùng fallback
   useEffect(() => {
     if (!navigator.geolocation) {
-      setLocationError('Trình duyệt không hỗ trợ Geolocation');
-      // Fallback to default location
-      setCurrentLocation({ lat: 10.7769, lon: 106.7009 });
+      setLocationError('Trình duyệt không hỗ trợ Geolocation. Vui lòng sử dụng trình duyệt khác.');
+      setCurrentLocation(null);
       return;
     }
 
     setGettingLocation(true);
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        setCurrentLocation({
-          lat: position.coords.latitude,
-          lon: position.coords.longitude,
-        });
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        console.log('GPS location obtained for SOS:', { lat, lon, accuracy: position.coords.accuracy });
+        
+        // Validate GPS coordinates
+        if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+          console.error('Invalid GPS coordinates:', { lat, lon });
+          setLocationError('Vị trí GPS không hợp lệ. Vui lòng thử lại.');
+          setCurrentLocation(null);
+          setGettingLocation(false);
+          return;
+        }
+        
+        // Chỉ dùng GPS location, không dùng userLocation từ profile
+        setCurrentLocation({ lat, lon });
         setLocationError('');
         setGettingLocation(false);
       },
       (error) => {
         console.error('Geolocation error:', error);
-        setLocationError('Không thể lấy vị trí. Sử dụng vị trí mặc định.');
-        // Fallback to default location or userLocation if available
-        setCurrentLocation(userLocation || { lat: 10.7769, lon: 106.7009 });
+        let errorMsg = 'Không thể lấy vị trí GPS. ';
+        if (error.code === 1) {
+          errorMsg += 'Vui lòng cho phép truy cập vị trí trong cài đặt trình duyệt.';
+        } else if (error.code === 2) {
+          errorMsg += 'Vị trí không khả dụng.';
+        } else if (error.code === 3) {
+          errorMsg += 'Hết thời gian chờ lấy vị trí. Vui lòng thử lại.';
+        } else {
+          errorMsg += 'Vui lòng thử lại.';
+        }
+        setLocationError(errorMsg);
+        // KHÔNG dùng userLocation từ profile, chỉ dùng GPS
+        setCurrentLocation(null);
         setGettingLocation(false);
       },
       {
         enableHighAccuracy: true,
-        timeout: 10000,
+        timeout: 20000,
         maximumAge: 0,
       }
     );
@@ -83,7 +103,27 @@ export default function SOSModal({ userId, userLocation, onClose, onSuccess }: S
       return;
     }
 
-    const location = currentLocation || userLocation || { lat: 10.7769, lon: 106.7009 };
+    // CHỈ dùng GPS location, không dùng userLocation từ profile
+    // Điều này đảm bảo SOS luôn dùng vị trí thực tế hiện tại, không phải vị trí cũ trong profile
+    if (!currentLocation || !currentLocation.lat || !currentLocation.lon) {
+      setError('Không thể lấy vị trí GPS. Vui lòng cho phép truy cập vị trí và thử lại.');
+      setLoading(false);
+      return;
+    }
+    
+    const location = currentLocation;
+
+    // Validate location
+    const lat = parseFloat(location.lat.toString());
+    const lon = parseFloat(location.lon.toString());
+    
+    if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+      setError('Vị trí không hợp lệ. Vui lòng thử lại.');
+      setLoading(false);
+      return;
+    }
+
+    console.log('Sending SOS with GPS location:', { lat, lon, source: 'GPS only' });
     
     setError('');
     setLoading(true);
@@ -93,7 +133,7 @@ export default function SOSModal({ userId, userLocation, onClose, onSuccess }: S
         userId,
         type,
         severity,
-        location: location,
+        location: { lat, lon },
         note,
       });
       onSuccess();
