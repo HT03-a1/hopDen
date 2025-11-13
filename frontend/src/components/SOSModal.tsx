@@ -155,44 +155,44 @@ export default function SOSModal({ userId, userLocation, onClose, onSuccess }: S
 
   return (
     <div className="pointer-events-auto">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-2xl">
-        <h2 className="text-2xl font-bold mb-4">Gửi SOS</h2>
+      <div className="bg-white rounded-lg p-4 sm:p-5 md:p-6 w-full max-w-md shadow-2xl">
+        <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Gửi SOS</h2>
 
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-3 sm:px-4 py-2 sm:py-3 rounded mb-3 sm:mb-4 text-sm">
             {error}
           </div>
         )}
 
         {locationError && (
-          <div className="bg-orange-100 border border-orange-400 text-orange-700 px-4 py-3 rounded mb-4 text-sm">
+          <div className="bg-orange-100 border border-orange-400 text-orange-700 px-3 sm:px-4 py-2 sm:py-3 rounded mb-3 sm:mb-4 text-xs sm:text-sm">
             ⚠️ {locationError}
           </div>
         )}
         {currentLocation && (
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 text-sm">
+          <div className="bg-green-100 border border-green-400 text-green-700 px-3 sm:px-4 py-2 sm:py-3 rounded mb-3 sm:mb-4 text-xs sm:text-sm">
             ✅ Đã lấy vị trí: {currentLocation.lat.toFixed(6)}, {currentLocation.lon.toFixed(6)}
-            <div className="text-xs mt-1 text-gray-600">
+            <div className="text-[10px] sm:text-xs mt-1 text-gray-600">
               (Từ ESP32 hoặc nhập thủ công)
             </div>
           </div>
         )}
         {loading && (
-          <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-4">
+          <div className="bg-blue-100 border border-blue-400 text-blue-700 px-3 sm:px-4 py-2 sm:py-3 rounded mb-3 sm:mb-4 text-sm">
             Đang gửi SOS...
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
           <div className={`transition-all duration-300 ${showFields ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
               Loại sự cố
             </label>
             <select
               value={type}
               onChange={(e) => handleTypeChange(e.target.value as any)}
               disabled={loading}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+              className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
             >
               <option value="accident">🚗 Tai nạn</option>
               <option value="breakdown">🔧 Hỏng xe</option>
@@ -202,14 +202,14 @@ export default function SOSModal({ userId, userLocation, onClose, onSuccess }: S
           </div>
 
           <div className={`transition-all duration-300 delay-100 ${showFields ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
               Mức độ nghiêm trọng
             </label>
             <select
               value={severity}
               onChange={(e) => handleSeverityChange(e.target.value as any)}
               disabled={loading}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+              className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
             >
               <option value="low">Thấp</option>
               <option value="medium">Trung bình</option>
@@ -219,38 +219,38 @@ export default function SOSModal({ userId, userLocation, onClose, onSuccess }: S
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
               Ghi chú (tùy chọn)
             </label>
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               rows={3}
               placeholder="Mô tả tình huống..."
             />
           </div>
 
           {!hasSelectedType || !hasSelectedSeverity ? (
-            <div className="flex space-x-3">
+            <div className="flex space-x-2 sm:space-x-3">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={loading}
-                className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 disabled:opacity-50"
+                className="flex-1 bg-gray-300 text-gray-700 py-2 sm:py-2.5 px-3 sm:px-4 rounded-md hover:bg-gray-400 disabled:opacity-50 text-sm sm:text-base"
               >
                 Hủy
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 disabled:opacity-50"
+                className="flex-1 bg-red-600 text-white py-2 sm:py-2.5 px-3 sm:px-4 rounded-md hover:bg-red-700 disabled:opacity-50 text-sm sm:text-base font-semibold"
               >
                 {loading ? 'Đang gửi...' : 'Gửi SOS'}
               </button>
             </div>
           ) : (
-            <div className="text-center text-sm text-gray-600">
+            <div className="text-center text-xs sm:text-sm text-gray-600">
               Đang tự động gửi SOS...
             </div>
           )}

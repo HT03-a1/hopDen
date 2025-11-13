@@ -106,20 +106,29 @@ export default function UserSidePanel({
   }, [showSOSModal]);
 
   return (
-    <div className="h-full flex flex-col bg-gray-50">
-      {/* Enhanced Header */}
-      <div className="bg-gradient-to-r from-slate-700 via-slate-800 to-slate-900 text-white px-6 py-4 shadow-lg">
-        <div className="flex items-center space-x-3">
-          <div className="bg-white/20 backdrop-blur-sm p-2 rounded-lg">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className="h-full flex flex-col bg-gray-50" style={{ 
+      backgroundColor: 'rgb(249 250 251)', 
+      opacity: 1,
+      filter: 'none',
+      WebkitFilter: 'none'
+    }}>
+      {/* Enhanced Header - Responsive */}
+      <div className="bg-gradient-to-r from-slate-700 via-slate-800 to-slate-900 text-white px-4 sm:px-5 md:px-6 py-3 sm:py-4 shadow-lg" style={{ 
+        opacity: 1,
+        filter: 'none',
+        WebkitFilter: 'none'
+      }}>
+        <div className="flex items-center space-x-2 sm:space-x-3">
+          <div className="bg-white/20 backdrop-blur-sm p-1.5 sm:p-2 rounded-lg">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
           </div>
-          <h2 className="text-xl font-bold tracking-tight">Thông tin người dùng</h2>
+          <h2 className="text-base sm:text-lg md:text-xl font-bold tracking-tight">Thông tin người dùng</h2>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
         {/* User Info Card - Enhanced */}
         <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden transition-all hover:shadow-lg">
           <button
@@ -137,7 +146,7 @@ export default function UserSidePanel({
             </svg>
           </button>
           {expandedSection === 'info' && (
-            <div className="px-4 pb-4 space-y-3 text-sm border-t border-gray-100">
+            <div className="px-3 sm:px-4 pb-3 sm:pb-4 space-y-2 sm:space-y-3 text-xs sm:text-sm border-t border-gray-100">
               <div className="flex items-center space-x-2 py-2">
                 <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -347,7 +356,7 @@ export default function UserSidePanel({
           )}
         </div>
 
-        {/* SOS Button - Enhanced */}
+        {/* SOS Button - Enhanced - Responsive */}
         <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden transition-all hover:shadow-lg">
           {/* Kiểm tra xem có SOS đang active không */}
           {(() => {
@@ -361,15 +370,15 @@ export default function UserSidePanel({
                 <div className="space-y-2">
                   <button
                     onClick={onSendSOS}
-                    className="w-full py-3 px-4 rounded-lg font-semibold text-sm bg-gray-400 text-white hover:bg-gray-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+                    className="w-full py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg font-semibold text-xs sm:text-sm bg-gray-400 text-white hover:bg-gray-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
                     disabled={true}
                     title="Đã có SOS đang active, vui lòng hủy SOS hiện tại trước"
                   >
                     <div className="flex items-center justify-center space-x-2">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                       </svg>
-                      <span>Gửi SOS (Đã có SOS active)</span>
+                      <span className="truncate">Gửi SOS (Đã có SOS active)</span>
                     </div>
                   </button>
                   <button
@@ -378,9 +387,9 @@ export default function UserSidePanel({
                         onCancelSOS(activeSOS.id);
                       }
                     }}
-                    className="w-full flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-semibold text-lg bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]"
+                    className="w-full flex items-center justify-center space-x-2 py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg font-semibold text-base sm:text-lg bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                     <span>Hủy SOS</span>
@@ -400,13 +409,13 @@ export default function UserSidePanel({
               return (
                 <button
                   onClick={onSendSOS}
-                  className={`w-full flex items-center justify-center space-x-2 py-4 px-4 rounded-lg font-bold text-lg transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] ${
+                  className={`w-full flex items-center justify-center space-x-2 py-3 sm:py-4 px-3 sm:px-4 rounded-lg font-bold text-base sm:text-lg transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] ${
                     isBlinking 
                       ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-black animate-pulse' 
                       : 'bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800'
                   }`}
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                   <span>Gửi SOS</span>

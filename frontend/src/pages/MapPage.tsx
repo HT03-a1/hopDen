@@ -64,6 +64,19 @@ export default function MapPage() {
   const [loading, setLoading] = useState(true);
 
   const [userCurrentLocation, setUserCurrentLocation] = useState<[number, number] | null>(null);
+  const [showSidePanel, setShowSidePanel] = useState(false); // For mobile: toggle side panel
+  
+  // Auto-show side panel on desktop (lg breakpoint)
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) { // lg breakpoint
+        setShowSidePanel(true);
+      }
+    };
+    handleResize(); // Check on mount
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Set userCurrentLocation từ profile (ESP32 hoặc nhập thủ công)
   // Cập nhật mỗi khi profile thay đổi để đảm bảo SOSModal luôn có vị trí mới nhất
@@ -421,78 +434,99 @@ export default function MapPage() {
 
   return (
     <div className="w-full h-screen flex flex-col">
-      {/* Top Bar - Enhanced Design */}
-      <div className="bg-gradient-to-r from-slate-700 via-slate-800 to-slate-900 text-white px-6 py-4 flex justify-between items-center shadow-lg border-b-2 border-slate-950">
-        <div className="flex items-center space-x-6">
+      {/* Top Bar - Enhanced Design - Responsive */}
+      <div className="bg-gradient-to-r from-slate-700 via-slate-800 to-slate-900 text-white px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 flex justify-between items-center shadow-lg border-b-2 border-slate-950">
+        <div className="flex items-center space-x-2 sm:space-x-4 md:space-x-6 flex-1 min-w-0">
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setShowSidePanel(!showSidePanel)}
+            className="lg:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
+            aria-label="Toggle menu"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+
           {/* Logo/Icon Section */}
-          <div className="flex items-center space-x-3">
-            <div className="flex items-center space-x-2">
-              <div className="bg-white/20 backdrop-blur-sm p-2 rounded-lg flex items-center justify-center">
+          <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-3 flex-shrink-0">
+            <div className="flex items-center space-x-1 sm:space-x-2">
+              <div className="bg-white/20 backdrop-blur-sm p-1 sm:p-1.5 md:p-2 rounded-lg flex items-center justify-center">
                 <img 
                   src={logoColoa} 
                   alt="Logo cổ loa" 
-                  className="w-8 h-8 object-contain"
+                  className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 object-contain"
                 />
               </div>
-              <div className="bg-white/20 backdrop-blur-sm p-2 rounded-lg flex items-center justify-center">
+              <div className="bg-white/20 backdrop-blur-sm p-1 sm:p-1.5 md:p-2 rounded-lg flex items-center justify-center">
                 <img 
                   src={logoCLBSTEM} 
                   alt="Logo CLBSTEM" 
-                  className="w-8 h-8 object-contain"
+                  className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 object-contain"
                 />
               </div>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight">Hộp đen thông minh</h1>
+            <h1 className="text-sm sm:text-lg md:text-2xl font-bold tracking-tight truncate">Hộp đen thông minh</h1>
           </div>
           
-          {/* User/Station Info */}
+          {/* User/Station Info - Hidden on mobile, visible on tablet+ */}
           {profile && (
-            <div className="flex items-center space-x-3 pl-4 border-l border-white/30">
+            <div className="hidden md:flex items-center space-x-3 pl-4 border-l border-white/30 flex-shrink-0">
               {profile.type === 'user' ? (
                 <>
-                  <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm px-2 md:px-3 py-1 md:py-1.5 rounded-full">
+                    <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
-                    <span className="font-semibold text-sm">{profile.name}</span>
-                    <span className="text-slate-200 text-xs font-mono bg-white/10 px-2 py-0.5 rounded">ID: {profile.id}</span>
+                    <span className="font-semibold text-xs md:text-sm truncate max-w-[100px] md:max-w-none">{profile.name}</span>
+                    <span className="text-slate-200 text-xs font-mono bg-white/10 px-1.5 md:px-2 py-0.5 rounded hidden lg:inline">ID: {profile.id}</span>
                   </div>
                 </>
               ) : (
-                <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm px-2 md:px-3 py-1 md:py-1.5 rounded-full">
                   {profile.type === 'medical' ? (
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
                   ) : (
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                   )}
-                  <span className="font-semibold text-sm">{profile.stationName}</span>
-                  <span className="text-slate-200 text-xs">{profile.type === 'medical' ? '🏥 Trạm y tế' : '🚑 Trạm cứu hộ'}</span>
+                  <span className="font-semibold text-xs md:text-sm truncate max-w-[80px] md:max-w-none">{profile.stationName}</span>
+                  <span className="text-slate-200 text-xs hidden lg:inline">{profile.type === 'medical' ? '🏥 Trạm y tế' : '🚑 Trạm cứu hộ'}</span>
                 </div>
               )}
             </div>
           )}
         </div>
         
-        {/* Logout Button */}
+        {/* Logout Button - Responsive */}
         <button
           onClick={logout}
-          className="flex items-center space-x-2 bg-red-500 hover:bg-red-600 active:bg-red-700 px-4 py-2 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95"
+          className="flex items-center space-x-1 sm:space-x-2 bg-red-500 hover:bg-red-600 active:bg-red-700 px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95 flex-shrink-0"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>
-          <span className="font-medium">Đăng xuất</span>
+          <span className="font-medium text-xs sm:text-sm md:text-base hidden sm:inline">Đăng xuất</span>
         </button>
       </div>
 
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden relative">
         {/* Map */}
-        <div className="flex-1 relative">
+        <div className={`flex-1 relative transition-all duration-300 ${showSidePanel ? 'lg:flex-1' : 'flex-1'}`}>
+          {/* Overlay for mobile when side panel is open - chỉ che map, không che side panel */}
+          {showSidePanel && (
+            <div
+              className="lg:hidden absolute inset-0 bg-black bg-opacity-50 z-40"
+              onClick={() => setShowSidePanel(false)}
+              style={{ 
+                pointerEvents: 'auto'
+              }}
+            />
+          )}
           <MapContainer
             center={getMapCenter()}
             zoom={13}
@@ -602,32 +636,60 @@ export default function MapPage() {
             )}
           </MapContainer>
 
-          {/* Legend */}
-          <div className="absolute bottom-4 right-4 bg-white p-4 rounded-lg shadow-lg z-[1000]">
-            <h3 className="font-bold mb-2 text-sm">Chú giải</h3>
-            <div className="space-y-1 text-xs">
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 bg-black rounded"></div>
-                <span>Người dùng / Thiết bị</span>
+          {/* Legend - Responsive */}
+          <div className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 bg-white p-2 sm:p-3 md:p-4 rounded-lg shadow-lg z-[1000] max-w-[140px] sm:max-w-none">
+            <h3 className="font-bold mb-1 sm:mb-2 text-xs sm:text-sm">Chú giải</h3>
+            <div className="space-y-0.5 sm:space-y-1 text-[10px] sm:text-xs">
+              <div className="flex items-center space-x-1 sm:space-x-2">
+                <div className="w-3 h-3 sm:w-4 sm:h-4 bg-black rounded flex-shrink-0"></div>
+                <span className="truncate">Người dùng</span>
               </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 bg-green-500 rounded"></div>
-                <span>Trạm y tế</span>
+              <div className="flex items-center space-x-1 sm:space-x-2">
+                <div className="w-3 h-3 sm:w-4 sm:h-4 bg-green-500 rounded flex-shrink-0"></div>
+                <span className="truncate">Trạm y tế</span>
               </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 bg-blue-500 rounded"></div>
-                <span>Trạm cứu hộ / Sửa xe</span>
+              <div className="flex items-center space-x-1 sm:space-x-2">
+                <div className="w-3 h-3 sm:w-4 sm:h-4 bg-blue-500 rounded flex-shrink-0"></div>
+                <span className="truncate">Trạm cứu hộ</span>
               </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 bg-red-500 rounded animate-pulse"></div>
-                <span>SOS (nhấp nháy đỏ, to)</span>
+              <div className="flex items-center space-x-1 sm:space-x-2">
+                <div className="w-3 h-3 sm:w-4 sm:h-4 bg-red-500 rounded animate-pulse flex-shrink-0"></div>
+                <span className="truncate">SOS</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Side Panel */}
-        <div className="w-96 bg-gray-50 border-l border-gray-200 overflow-y-auto relative">
+        {/* Side Panel - Responsive */}
+        <div className={`
+          fixed lg:relative inset-y-0 right-0 z-[60] lg:z-auto
+          w-full sm:w-80 lg:w-96
+          bg-gray-50 border-l border-gray-200 overflow-y-auto
+          transform transition-transform duration-300 ease-in-out
+          ${showSidePanel ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
+        `}
+        style={{ 
+          backgroundColor: 'rgb(249 250 251)', // bg-gray-50 - đảm bảo không bị mờ
+          opacity: 1, // Đảm bảo opacity = 1
+          backdropFilter: 'none',
+          WebkitBackdropFilter: 'none',
+          filter: 'none', // Đảm bảo không có filter làm mờ
+          WebkitFilter: 'none',
+          pointerEvents: 'auto', // Đảm bảo có thể click được
+          isolation: 'isolate' // Tạo stacking context riêng
+        }}>
+          {/* Close button for mobile */}
+          {showSidePanel && (
+            <button
+              onClick={() => setShowSidePanel(false)}
+              className="lg:hidden absolute top-3 right-3 sm:top-4 sm:right-4 z-10 p-2 bg-gray-200 hover:bg-gray-300 rounded-full transition-colors shadow-md"
+              aria-label="Close menu"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
           {profile?.type === 'user' ? (
             <>
               <UserSidePanel
@@ -659,9 +721,9 @@ export default function MapPage() {
                   loadMapData();
                 }}
               />
-              {/* SOS Modal positioned below SOS button */}
+              {/* SOS Modal positioned below SOS button - Responsive */}
               {showSOSModal && profile && (
-                <div className="absolute right-0 top-64 z-50 w-full px-4">
+                <div className="absolute right-0 top-48 sm:top-64 z-50 w-full px-2 sm:px-4">
                   <SOSModal
                     userId={profile.id}
                     userLocation={userCurrentLocation ? { lat: userCurrentLocation[0], lon: userCurrentLocation[1] } : undefined}

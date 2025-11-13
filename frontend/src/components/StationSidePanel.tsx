@@ -77,21 +77,30 @@ export default function StationSidePanel({
   };
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="p-4 bg-blue-600 text-white">
-        <h2 className="text-xl font-bold">{profile?.stationName}</h2>
-        <p className="text-sm text-blue-100">{profile?.type === 'medical' ? 'Trạm y tế' : 'Trạm cứu hộ'}</p>
+    <div className="h-full flex flex-col" style={{ 
+      backgroundColor: 'rgb(249 250 251)', 
+      opacity: 1,
+      filter: 'none',
+      WebkitFilter: 'none'
+    }}>
+      <div className="p-3 sm:p-4 bg-gradient-to-r from-slate-700 via-slate-800 to-slate-900 text-white" style={{ 
+        opacity: 1,
+        filter: 'none',
+        WebkitFilter: 'none'
+      }}>
+        <h2 className="text-base sm:text-lg md:text-xl font-bold truncate">{profile?.stationName}</h2>
+        <p className="text-xs sm:text-sm text-slate-200">{profile?.type === 'medical' ? 'Trạm y tế' : 'Trạm cứu hộ'}</p>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {/* Station Info */}
-        <div className="bg-white rounded-lg shadow p-4">
+      <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
+        {/* Station Info - Responsive */}
+        <div className="bg-white rounded-lg shadow p-3 sm:p-4">
           <button
             onClick={() => setExpandedSection(expandedSection === 'info' ? null : 'info')}
-            className="w-full flex justify-between items-center font-semibold mb-2"
+            className="w-full flex justify-between items-center font-semibold mb-2 text-sm sm:text-base"
           >
             <span>Thông tin trạm</span>
-            <span>{expandedSection === 'info' ? '▼' : '▶'}</span>
+            <span className="text-xs sm:text-sm">{expandedSection === 'info' ? '▼' : '▶'}</span>
           </button>
           {expandedSection === 'info' && (
             <div className="space-y-2 text-sm">
@@ -114,22 +123,22 @@ export default function StationSidePanel({
           )}
         </div>
 
-        {/* SOS List */}
-        <div className="bg-white rounded-lg shadow p-4">
+        {/* SOS List - Responsive */}
+        <div className="bg-white rounded-lg shadow p-3 sm:p-4">
           <button
             onClick={() => setExpandedSection(expandedSection === 'sos' ? null : 'sos')}
-            className="w-full flex justify-between items-center font-semibold mb-2"
+            className="w-full flex justify-between items-center font-semibold mb-2 text-sm sm:text-base"
           >
             <span>SOS trong khu vực ({sosList.length})</span>
-            <span>{expandedSection === 'sos' ? '▼' : '▶'}</span>
+            <span className="text-xs sm:text-sm">{expandedSection === 'sos' ? '▼' : '▶'}</span>
           </button>
           {expandedSection === 'sos' && (
-            <div className="space-y-3 max-h-96 overflow-y-auto">
+            <div className="space-y-2 sm:space-y-3 max-h-96 overflow-y-auto">
               {sosList.length === 0 ? (
-                <p className="text-sm text-gray-500">Không có SOS nào</p>
+                <p className="text-xs sm:text-sm text-gray-500">Không có SOS nào</p>
               ) : (
                 sosList.map((sos) => (
-                  <div key={sos.id} className="border rounded-lg p-3 bg-gray-50">
+                  <div key={sos.id} className="border rounded-lg p-2 sm:p-3 bg-gray-50">
                     <div className="flex justify-between items-start mb-2">
                       <div>
                         <div className="font-semibold">
@@ -142,7 +151,7 @@ export default function StationSidePanel({
                           Mức độ: {sos.severity}
                         </div>
                       </div>
-                      <span className={`text-xs px-2 py-1 rounded ${getStatusColor(sos.status)}`}>
+                      <span className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded ${getStatusColor(sos.status)}`}>
                         {getStatusText(sos.status)}
                       </span>
                     </div>
@@ -175,7 +184,7 @@ export default function StationSidePanel({
                             <>
                               <button
                                 onClick={() => onClaimSOS(sos.id)}
-                                className="text-xs bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition"
+                                className="text-[10px] sm:text-xs bg-green-500 text-white px-2 sm:px-3 py-1 rounded hover:bg-green-600 transition"
                               >
                                 ✅ Nhận nhiệm vụ
                               </button>
@@ -185,7 +194,7 @@ export default function StationSidePanel({
                                     onUpdateStatus(sos.id, 'cancelled');
                                   }
                                 }}
-                                className="text-xs bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition"
+                                className="text-[10px] sm:text-xs bg-red-500 text-white px-2 sm:px-3 py-1 rounded hover:bg-red-600 transition"
                               >
                                 ❌ Không nhận nhiệm vụ
                               </button>
@@ -201,13 +210,13 @@ export default function StationSidePanel({
                                       onToggleReady(sos.id, !isReady);
                                     }
                                   }}
-                                  className={`text-xs px-3 py-1 rounded transition ${
+                                  className={`text-[10px] sm:text-xs px-2 sm:px-3 py-1 rounded transition ${
                                     isReady 
                                       ? 'bg-yellow-500 text-white hover:bg-yellow-600' 
                                       : 'bg-green-500 text-white hover:bg-green-600'
                                   }`}
                                 >
-                                  {isReady ? '🟡 Sẵn sàng nhận nhiệm vụ' : '🟢 Nhận nhiệm vụ'}
+                                  <span className="truncate">{isReady ? '🟡 Sẵn sàng nhận nhiệm vụ' : '🟢 Nhận nhiệm vụ'}</span>
                                 </button>
                               );
                             })()
@@ -227,7 +236,7 @@ export default function StationSidePanel({
                                 });
                                 onShowRoute(fromLat, fromLon, toLat, toLon);
                               }}
-                              className="text-xs bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition"
+                              className="text-[10px] sm:text-xs bg-blue-500 text-white px-2 sm:px-3 py-1 rounded hover:bg-blue-600 transition"
                             >
                               🗺️ Chỉ đường
                             </button>
@@ -238,7 +247,7 @@ export default function StationSidePanel({
                         <>
                           <button
                             onClick={() => onUpdateStatus(sos.id, 'on_route')}
-                            className="text-xs bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition"
+                            className="text-[10px] sm:text-xs bg-blue-500 text-white px-2 sm:px-3 py-1 rounded hover:bg-blue-600 transition"
                           >
                             Bắt đầu đi
                           </button>
@@ -257,7 +266,7 @@ export default function StationSidePanel({
                                 });
                                 onShowRoute(fromLat, fromLon, toLat, toLon);
                               }}
-                              className="text-xs bg-purple-500 text-white px-3 py-1 rounded hover:bg-purple-600 transition"
+                              className="text-[10px] sm:text-xs bg-purple-500 text-white px-2 sm:px-3 py-1 rounded hover:bg-purple-600 transition"
                             >
                               🗺️ Chỉ đường
                             </button>
@@ -275,7 +284,7 @@ export default function StationSidePanel({
                                 const googleMapsUrl = `https://www.google.com/maps/dir/${fromLat},${fromLon}/${toLat},${toLon}`;
                                 window.open(googleMapsUrl, '_blank');
                               }}
-                              className="text-xs bg-orange-500 text-white px-3 py-1 rounded hover:bg-orange-600 transition"
+                              className="text-[10px] sm:text-xs bg-orange-500 text-white px-2 sm:px-3 py-1 rounded hover:bg-orange-600 transition"
                             >
                               Mở Google Maps
                             </button>
@@ -286,7 +295,7 @@ export default function StationSidePanel({
                                 onUpdateStatus(sos.id, 'cancelled');
                               }
                             }}
-                            className="text-xs bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition"
+                            className="text-[10px] sm:text-xs bg-red-500 text-white px-2 sm:px-3 py-1 rounded hover:bg-red-600 transition"
                           >
                             Hủy nhiệm vụ
                           </button>
@@ -300,7 +309,7 @@ export default function StationSidePanel({
                                 onUpdateStatus(sos.id, 'done');
                               }
                             }}
-                            className="text-xs bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition font-semibold"
+                            className="text-[10px] sm:text-xs bg-green-500 text-white px-2 sm:px-3 py-1 rounded hover:bg-green-600 transition font-semibold"
                           >
                             ✓ Hoàn thành nhiệm vụ
                           </button>
@@ -319,7 +328,7 @@ export default function StationSidePanel({
                                 });
                                 onShowRoute(fromLat, fromLon, toLat, toLon);
                               }}
-                              className="text-xs bg-purple-500 text-white px-3 py-1 rounded hover:bg-purple-600 transition"
+                              className="text-[10px] sm:text-xs bg-purple-500 text-white px-2 sm:px-3 py-1 rounded hover:bg-purple-600 transition"
                             >
                               🗺️ Chỉ đường
                             </button>
@@ -330,7 +339,7 @@ export default function StationSidePanel({
                                 onUpdateStatus(sos.id, 'cancelled');
                               }
                             }}
-                            className="text-xs bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition"
+                            className="text-[10px] sm:text-xs bg-red-500 text-white px-2 sm:px-3 py-1 rounded hover:bg-red-600 transition"
                           >
                             Hủy nhiệm vụ
                           </button>
