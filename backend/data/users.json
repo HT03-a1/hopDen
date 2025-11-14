@@ -6,12 +6,13 @@
     "password": "Quan2004",
     "phone": "0335587155",
     "address": "Lại Đà Đông Hội, Hà Nội",
-    "lat": 21.0985,
-    "lon": 105.9884,
+    "lat": 20.9437,
+    "lon": 105.8115,
     "createdAt": "2025-11-13T16:44:19.873Z",
     "lastLocationSource": "hardware",
-    "lastLocationUpdatedAt": "2025-11-14T16:41:58.431Z",
-    "lastHardwareLocationAt": "2025-11-14T16:41:58.431Z"
+    "lastLocationUpdatedAt": "2025-11-14T17:30:25.515Z",
+    "lastHardwareLocationAt": "2025-11-14T17:30:25.515Z",
+    "lastMobileLocationAt": "2025-11-14T17:04:25.887Z"
   },
   {
     "id": "U0002",
@@ -40,5 +41,16 @@
     "lastLocationSource": "mobile",
     "lastLocationUpdatedAt": "2025-11-14T15:51:16.780Z",
     "lastMobileLocationAt": "2025-11-14T15:51:16.780Z"
+  },
+  {
+    "id": "U0004",
+    "name": "Tuấn Dũng",
+    "email": "123456789@gmail.com",
+    "password": "123456",
+    "phone": "123456",
+    "address": "",
+    "lat": 10.7769,
+    "lon": 106.7009,
+    "createdAt": "2025-11-14T16:44:30.783Z"
   }
 ]

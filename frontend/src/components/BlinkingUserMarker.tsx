@@ -80,8 +80,22 @@ function MarkerWithBlink({
     }
   }, [isBlinking, hasActiveSOS, color, isSOS, isLarge, createCustomIcon]);
 
-  // Initial icon
-  const initialIcon = createCustomIcon(color, isSOS, isLarge);
+  // Initial icon - SOS markers luôn màu đỏ và to
+  const initialIcon = isSOS 
+    ? createCustomIcon('red', false, true) 
+    : createCustomIcon(color, isSOS, isLarge);
+
+  // Log để debug SOS marker render
+  if (isSOS) {
+    console.log('[BlinkingUserMarker] Rendering SOS marker:', {
+      id: entity.id,
+      position: [entity.lat, entity.lon],
+      isSOS,
+      isLarge,
+      shouldBlink,
+      hasActiveSOS
+    });
+  }
 
   return (
     <Marker

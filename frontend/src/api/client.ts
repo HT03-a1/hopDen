@@ -11,15 +11,41 @@ export const apiClient = axios.create({
 
 // Add token to requests
 apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('auth-storage');
-  if (token) {
+  const tokenData = localStorage.getItem('auth-storage');
+  if (tokenData) {
     try {
-      const parsed = JSON.parse(token);
-      if (parsed.state?.token) {
-        config.headers.Authorization = `Bearer ${parsed.state.token}`;
+      const parsed = JSON.parse(tokenData);
+      // authStore lưu token trực tiếp: { token: "...", profile: {...} }
+      // Hoặc có thể là Zustand format: { state: { token: "...", profile: {...} } }
+      let token: string | null = null;
+      
+      if (parsed.token) {
+        // Format trực tiếp từ authStore
+        token = parsed.token;
+      } else if (parsed.state?.token) {
+        // Format Zustand
+        token = parsed.state.token;
+      }
+      
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+        // Log để debug
+        if (import.meta.env.DEV) {
+          console.log('[apiClient] ✅ Adding token to request:', config.url, 'Token:', token.substring(0, 30) + '...');
+        }
+      } else {
+        if (import.meta.env.DEV) {
+          console.warn('[apiClient] ⚠️ No token found in auth-storage:', parsed);
+        }
       }
     } catch (e) {
-      // Ignore parse errors
+      if (import.meta.env.DEV) {
+        console.error('[apiClient] ❌ Error parsing auth-storage:', e);
+      }
+    }
+  } else {
+    if (import.meta.env.DEV) {
+      console.warn('[apiClient] ⚠️ No auth-storage in localStorage');
     }
   }
   return config;

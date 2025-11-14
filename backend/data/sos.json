@@ -290,13 +290,11 @@
       "lat": 10.7383,
       "lon": 105.8557
     },
-    "status": "pending",
+    "status": "cancelled",
     "note": "",
     "rejectedStationIds": [],
-    "readyStationIds": [],
     "createdAt": "2025-11-14T15:47:53.360Z",
-    "updatedAt": "2025-11-14T15:47:53.361Z",
-    "assignedStationId": "S0007"
+    "updatedAt": "2025-11-14T17:16:07.655Z"
   },
   {
     "id": "SOS1763136563401",
@@ -314,5 +312,280 @@
     "createdAt": "2025-11-14T16:09:23.401Z",
     "updatedAt": "2025-11-14T16:12:19.010Z",
     "assignedStationId": "S0005"
+  },
+  {
+    "id": "SOS1763138730383",
+    "userId": "U0004",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 10.7769,
+      "lon": 106.7009
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-14T16:45:30.383Z",
+    "updatedAt": "2025-11-14T16:45:48.257Z"
+  },
+  {
+    "id": "SOS1763139213655",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 21.1743,
+      "lon": 105.9678
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [
+      "S0031"
+    ],
+    "readyStationIds": [],
+    "createdAt": "2025-11-14T16:53:33.655Z",
+    "updatedAt": "2025-11-14T16:53:54.864Z"
+  },
+  {
+    "id": "SOS1763140299189",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 21.106915092311148,
+      "lon": 105.86446824199831
+    },
+    "status": "done",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-14T17:11:39.189Z",
+    "updatedAt": "2025-11-14T17:11:59.924Z",
+    "assignedStationId": "S0031"
+  },
+  {
+    "id": "SOS1763140653138",
+    "userId": "U0002",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 10.7383,
+      "lon": 105.8557
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-14T17:17:33.138Z",
+    "updatedAt": "2025-11-14T17:17:53.634Z"
+  },
+  {
+    "id": "SOS1763140691071",
+    "userId": "U0002",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 10.7383,
+      "lon": 105.8557
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-14T17:18:11.071Z",
+    "updatedAt": "2025-11-14T17:49:15.228Z"
+  },
+  {
+    "id": "SOS1763140720775",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 21.106915092311148,
+      "lon": 105.86446824199831
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-14T17:18:40.775Z",
+    "updatedAt": "2025-11-14T17:21:20.541Z"
+  },
+  {
+    "id": "SOS1763140891751",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 21.106915092311148,
+      "lon": 105.86446824199831
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-14T17:21:31.751Z",
+    "updatedAt": "2025-11-14T17:25:55.557Z"
+  },
+  {
+    "id": "SOS1763141241479",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 21.0143,
+      "lon": 105.9251
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-14T17:27:21.479Z",
+    "updatedAt": "2025-11-14T17:32:33.313Z"
+  },
+  {
+    "id": "SOS1763141560304",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 20.9437,
+      "lon": 105.8115
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-14T17:32:40.304Z",
+    "updatedAt": "2025-11-14T17:32:43.014Z"
+  },
+  {
+    "id": "SOS1763141599206",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 20.9437,
+      "lon": 105.8115
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-14T17:33:19.206Z",
+    "updatedAt": "2025-11-14T17:33:22.262Z"
+  },
+  {
+    "id": "SOS1763141814527",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 20.9437,
+      "lon": 105.8115
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-14T17:36:54.527Z",
+    "updatedAt": "2025-11-14T17:40:18.821Z"
+  },
+  {
+    "id": "SOS1763141997857",
+    "userId": "U0004",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 10.7769,
+      "lon": 106.7009
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-14T17:39:57.857Z",
+    "updatedAt": "2025-11-14T17:40:31.096Z"
+  },
+  {
+    "id": "SOS1763142028394",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 20.9437,
+      "lon": 105.8115
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-14T17:40:28.394Z",
+    "updatedAt": "2025-11-14T17:41:06.242Z"
+  },
+  {
+    "id": "SOS1763142072103",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 20.9437,
+      "lon": 105.8115
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-14T17:41:12.103Z",
+    "updatedAt": "2025-11-14T17:47:10.564Z"
+  },
+  {
+    "id": "SOS1763142392903",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 20.9437,
+      "lon": 105.8115
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "createdAt": "2025-11-14T17:46:32.903Z",
+    "updatedAt": "2025-11-14T17:47:22.331Z"
+  },
+  {
+    "id": "SOS1763142445879",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 20.9437,
+      "lon": 105.8115
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-14T17:47:25.879Z",
+    "updatedAt": "2025-11-14T18:08:31.440Z"
+  },
+  {
+    "id": "SOS1763143629027",
+    "userId": "U0002",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 10.7383,
+      "lon": 105.8557
+    },
+    "status": "pending",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-14T18:07:09.027Z",
+    "updatedAt": "2025-11-14T18:07:09.032Z",
+    "assignedStationId": "S0007"
   }
 ]

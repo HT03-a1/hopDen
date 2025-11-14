@@ -175,9 +175,13 @@ export default function MapPage() {
       console.error('[MapPage] ❌ WebSocket connection error:', error);
     });
 
-    newSocket.on('sos:new', () => {
-      loadMapData();
-      loadSOSList();
+    newSocket.on('sos:new', async (sosData) => {
+      console.log('[MapPage] 📡 Received sos:new event:', sosData);
+      // Đợi một chút để đảm bảo backend đã lưu SOS
+      await new Promise(resolve => setTimeout(resolve, 200));
+      await loadSOSList();
+      await loadMapData();
+      console.log('[MapPage] Map data reloaded after sos:new event');
     });
 
     newSocket.on('sos:update', async () => {
@@ -239,7 +243,29 @@ export default function MapPage() {
   const loadMapData = async () => {
     try {
       const response = await apiClient.get('/map/entities');
-      setEntities(response.data);
+      const entitiesData = response.data;
+      console.log('[MapPage] Loaded map entities:', entitiesData.length, 'entities');
+      
+      // Log chi tiết các loại entities
+      const sosEntities = entitiesData.filter((e: MapEntity) => e.type === 'sos');
+      const userEntities = entitiesData.filter((e: MapEntity) => e.type === 'user');
+      const deviceEntities = entitiesData.filter((e: MapEntity) => e.type === 'device');
+      console.log('[MapPage] Entities breakdown:', {
+        sos: sosEntities.length,
+        user: userEntities.length,
+        device: deviceEntities.length,
+        total: entitiesData.length
+      });
+      
+      if (sosEntities.length > 0) {
+        console.log('[MapPage] SOS entities:', sosEntities.map((e: MapEntity) => ({ id: e.id, userId: e.userId, type: e.sosType })));
+      }
+      
+      if (profile?.type === 'medical' || profile?.type === 'rescue') {
+        console.log('[MapPage] Station sees', userEntities.length, 'user entities');
+      }
+      
+      setEntities(entitiesData);
       setLoading(false);
     } catch (error) {
       console.error('❌ Error loading map data:', error);
@@ -496,9 +522,13 @@ export default function MapPage() {
     }
   };
 
-  const handleSOSCreated = () => {
-    loadMapData();
-    loadSOSList();
+  const handleSOSCreated = async () => {
+    console.log('[MapPage] SOS created, reloading map data...');
+    // Đợi một chút để đảm bảo backend đã lưu SOS
+    await new Promise(resolve => setTimeout(resolve, 200));
+    await loadSOSList();
+    await loadMapData();
+    console.log('[MapPage] Map data reloaded after SOS creation');
   };
 
   if (loading) {
@@ -648,6 +678,14 @@ export default function MapPage() {
 
             {/* Render entities */}
             {entities.map((entity) => {
+              // QUAN TRỌNG: KHÔNG filter SOS entities - luôn hiển thị SOS marker
+              // Chỉ filter user entities
+              
+              // BẢO VỆ QUYỀN RIÊNG TƯ: Nếu là user type, chỉ hiển thị user của mình
+              if (profile?.type === 'user' && entity.type === 'user' && entity.id !== profile.id) {
+                return null; // Ẩn user khác
+              }
+              
               // Skip user entity if we're showing current location
               if (profile?.type === 'user' && entity.type === 'user' && entity.id === profile.id && userCurrentLocation) {
                 return null;
@@ -674,16 +712,50 @@ export default function MapPage() {
                 }
               }
               
+              // Đảm bảo SOS marker LUÔN được render (không filter)
+              if (entity.type === 'sos') {
+                console.log('[MapPage] ✅ SOS entity found, will render:', entity.id);
+              }
+              
+              // Log để debug SOS marker
+              if (entity.type === 'sos') {
+                console.log('[MapPage] ✅ Rendering SOS marker:', {
+                  id: entity.id,
+                  userId: entity.userId,
+                  currentUserId: profile?.id,
+                  lat: entity.lat,
+                  lon: entity.lon,
+                  type: entity.sosType,
+                  status: entity.status
+                });
+              }
+              
               const color = getMarkerColor(entity.type);
               const isSOS = entity.type === 'sos';
               // SOS markers should be large and always blink
               const isLarge = isSOS;
               // SOS markers luôn nhấp nháy đỏ cho tất cả tài khoản
               const shouldBlink = isSOS;
+              
+              // Đảm bảo SOS marker luôn được render
+              if (isSOS) {
+                console.log('[MapPage] ✅ SOS marker props:', {
+                  isSOS,
+                  isLarge,
+                  shouldBlink,
+                  color,
+                  key: `sos-${entity.id}-${entity.lat}-${entity.lon}`
+                });
+              }
 
+              // Đảm bảo SOS marker luôn được render với key unique
+              const markerKey = entity.type === 'sos' 
+                ? `sos-${entity.id}-${entity.lat}-${entity.lon}` 
+                : `${entity.type}-${entity.id}`;
+              
               return (
                 <BlinkingUserMarker
-                key={`${entity.type}-${entity.id}`}
+                key={markerKey}
                 entity={entity}
                 isCurrentUser={isCurrentUser}
                 color={color}
@@ -892,18 +964,25 @@ export default function MapPage() {
                       console.error('Profile ID not available');
                       return;
                     }
+                    console.log(`[MapPage] Station updating SOS ${sosId} to status: ${status}`);
                     await apiClient.patch(`/sos/${sosId}/status`, { 
                       status,
                       stationId: profile.id // Gửi stationId để backend biết là trạm đang update
                     });
-                    // Reload SOS list (bao gồm cả doneSOSList) để cập nhật danh sách ẩn user marker
-                    await loadSOSList();
-                    loadMapData();
                     
                     // Nếu hoàn thành nhiệm vụ (done) hoặc hủy (cancelled), xóa route trên bản đồ
                     if (status === 'done' || status === 'cancelled') {
                       setRoute([]);
+                      console.log(`[MapPage] SOS ${sosId} ${status}, clearing route and reloading map data`);
                     }
+                    
+                    // Reload SOS list (bao gồm cả doneSOSList) để cập nhật danh sách ẩn user marker
+                    await loadSOSList();
+                    // Đợi một chút để đảm bảo backend đã cập nhật
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    // Reload map data để ẩn user marker ngay lập tức
+                    await loadMapData();
+                    console.log(`[MapPage] Map data reloaded after SOS ${sosId} ${status}`);
                   } catch (error) {
                     console.error('Error updating status:', error);
                   }

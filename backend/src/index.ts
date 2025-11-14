@@ -9,6 +9,7 @@ import stationRoutes from './routes/stations';
 import ratingRoutes from './routes/ratings';
 import telemetryRoutes from './routes/telemetry';
 import { initializeData } from './services/dataService';
+import { authenticate } from './middleware/auth';
 
 const app = express();
 const httpServer = createServer(app);
