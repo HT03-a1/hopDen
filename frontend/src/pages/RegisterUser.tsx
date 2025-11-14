@@ -171,22 +171,20 @@ export default function RegisterUser() {
             />
           </div>
 
-          {/* <div>
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Địa chỉ
+              Địa chỉ (Tùy chọn)
             </label>
             <input
               type="text"
               value={formData.address}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Nhập địa chỉ của bạn (không bắt buộc)"
             />
-          </div> */}
-
-          <div className="bg-blue-50 border border-blue-200 rounded-md p-3 text-sm text-gray-700">
-            <p className="font-semibold mb-1">📍 Vị trí</p>
-            <p className="text-xs">Vị trí sẽ được tự động lấy từ thiết bị khi bạn gửi SOS. Không cần nhập vị trí khi đăng ký.</p>
+            <p className="text-xs text-gray-500 mt-1">
+              Địa chỉ giúp trạm dễ dàng tìm thấy bạn khi cần thiết. Vị trí GPS sẽ được lấy tự động khi bạn gửi SOS.
+            </p>
           </div>
 
           <button

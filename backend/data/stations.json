@@ -494,5 +494,21 @@
     "ratingAvg": 0,
     "ratingCount": 0,
     "createdAt": "2025-11-14T16:52:42.279Z"
+  },
+  {
+    "id": "S0032",
+    "stationName": "Trạm sửa xe Quân phụ tùng",
+    "type": "medical",
+    "email": "bacquandaibay2@gmail.com",
+    "password": "quan2004",
+    "phone": "0335587166",
+    "address": "55 đường lại đà đông hội đông anh hà nội",
+    "lat": 21.080158415213397,
+    "lon": 105.86840314814373,
+    "openHours": "24/7",
+    "description": "Gì cũng sửa",
+    "ratingAvg": 0,
+    "ratingCount": 0,
+    "createdAt": "2025-11-14T18:29:54.085Z"
   }
 ]

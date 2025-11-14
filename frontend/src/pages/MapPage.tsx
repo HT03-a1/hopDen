@@ -128,27 +128,39 @@ export default function MapPage() {
     let wsUrl = import.meta.env.VITE_WS_URL;
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
     
-    console.log('[MapPage] 🔍 VITE_WS_URL:', import.meta.env.VITE_WS_URL);
-    console.log('[MapPage] 🔍 VITE_API_URL:', apiUrl);
+    if (import.meta.env.DEV) {
+      console.log('[MapPage] 🔍 VITE_WS_URL:', import.meta.env.VITE_WS_URL);
+      console.log('[MapPage] 🔍 VITE_API_URL:', apiUrl);
+    }
     
     if (!wsUrl) {
       // Chuyển từ API URL sang WebSocket URL
       // Ví dụ: https://api.hopdenthongminh.cloud/api -> wss://api.hopdenthongminh.cloud
       // Hoặc: http://localhost:3000/api -> http://localhost:3000
       wsUrl = apiUrl.replace('/api', '').replace('https://', 'wss://').replace('http://', 'ws://');
-      console.log('[MapPage] 🔍 Auto-generated WebSocket URL from API URL:', wsUrl);
+      if (import.meta.env.DEV) {
+        console.log('[MapPage] 🔍 Auto-generated WebSocket URL from API URL:', wsUrl);
+      }
     } else {
-      console.log('[MapPage] 🔍 Using VITE_WS_URL from .env:', wsUrl);
+      if (import.meta.env.DEV) {
+        console.log('[MapPage] 🔍 Using VITE_WS_URL from .env:', wsUrl);
+      }
     }
     
     // Đảm bảo WebSocket URL trỏ đến backend domain (api.hopdenthongminh.cloud), không phải frontend
     if (wsUrl.includes('hopdenthongminh.cloud') && !wsUrl.includes('api.hopdenthongminh.cloud')) {
-      console.warn('[MapPage] ⚠️ WebSocket URL trỏ đến frontend domain! Sửa thành api.hopdenthongminh.cloud');
+      if (import.meta.env.DEV) {
+        console.warn('[MapPage] ⚠️ WebSocket URL trỏ đến frontend domain! Sửa thành api.hopdenthongminh.cloud');
+      }
       wsUrl = wsUrl.replace('hopdenthongminh.cloud', 'api.hopdenthongminh.cloud');
-      console.log('[MapPage] ✅ Đã sửa WebSocket URL thành:', wsUrl);
+      if (import.meta.env.DEV) {
+        console.log('[MapPage] ✅ Đã sửa WebSocket URL thành:', wsUrl);
+      }
     }
     
-    console.log('[MapPage] 🔍 Connecting to WebSocket:', wsUrl);
+    if (import.meta.env.DEV) {
+      console.log('[MapPage] 🔍 Connecting to WebSocket:', wsUrl);
+    }
     
     const newSocket = io(wsUrl, {
       transports: ['polling', 'websocket'], // Ưu tiên polling (ổn định hơn qua Cloudflare Tunnel)
@@ -176,12 +188,13 @@ export default function MapPage() {
     });
 
     newSocket.on('sos:new', async (sosData) => {
-      console.log('[MapPage] 📡 Received sos:new event:', sosData);
+      if (import.meta.env.DEV) {
+        console.log('[MapPage] 📡 Received sos:new event:', sosData);
+      }
       // Đợi một chút để đảm bảo backend đã lưu SOS
       await new Promise(resolve => setTimeout(resolve, 200));
       await loadSOSList();
       await loadMapData();
-      console.log('[MapPage] Map data reloaded after sos:new event');
     });
 
     newSocket.on('sos:update', async () => {
@@ -198,18 +211,19 @@ export default function MapPage() {
     });
 
     newSocket.on('user:update', async (data) => {
-      console.log('[MapPage] 📡 Received user:update event:', data);
+      if (import.meta.env.DEV) {
+        console.log('[MapPage] 📡 Received user:update event:', data);
+      }
       
       const { profile: currentProfile, updateProfile } = useAuthStore.getState();
       
-      console.log('[MapPage] 🔍 Current profile ID:', currentProfile?.id);
-      console.log('[MapPage] 🔍 Update data ID:', data.id);
-      
       if (currentProfile && currentProfile.id === data.id) {
-        console.log('[MapPage] ✅ Updating profile location:', {
-          old: { lat: currentProfile.lat, lon: currentProfile.lon },
-          new: { lat: data.lat, lon: data.lon }
-        });
+        if (import.meta.env.DEV) {
+          console.log('[MapPage] ✅ Updating profile location:', {
+            old: { lat: currentProfile.lat, lon: currentProfile.lon },
+            new: { lat: data.lat, lon: data.lon }
+          });
+        }
         
         // Cập nhật đầy đủ thông tin vị trí trong store TRƯỚC
         updateProfile({ 
@@ -222,14 +236,9 @@ export default function MapPage() {
         // Cập nhật userCurrentLocation để marker re-render
         setUserCurrentLocation([data.lat, data.lon]);
         
-        console.log('[MapPage] ✅ Profile updated, userCurrentLocation set to:', [data.lat, data.lon]);
-        
         // Reload map data SAU KHI đã cập nhật state để đảm bảo entities mới nhất
         await loadMapData();
-        
-        console.log('[MapPage] ✅ Map data reloaded');
       } else {
-        console.log('[MapPage] ⚠️ User ID mismatch, not updating profile');
         // Vẫn reload map data để cập nhật entities cho user khác
         await loadMapData();
       }
@@ -662,7 +671,6 @@ export default function MapPage() {
                     lat: userCurrentLocation[0],
                     lon: userCurrentLocation[1],
                   }}
-                  isCurrentUser={true}
                   color={getMarkerColor('user')}
                   isSOS={false}
                   isLarge={false}
@@ -712,13 +720,15 @@ export default function MapPage() {
                 }
               }
               
-              // Đảm bảo SOS marker LUÔN được render (không filter)
-              if (entity.type === 'sos') {
-                console.log('[MapPage] ✅ SOS entity found, will render:', entity.id);
-              }
+              const color = getMarkerColor(entity.type);
+              const isSOS = entity.type === 'sos';
+              // SOS markers should be large and always blink
+              const isLarge = isSOS;
+              // SOS markers luôn nhấp nháy đỏ cho tất cả tài khoản
+              const shouldBlink = isSOS;
               
-              // Log để debug SOS marker
-              if (entity.type === 'sos') {
+              // Log để debug SOS marker (chỉ trong dev mode)
+              if (import.meta.env.DEV && entity.type === 'sos') {
                 console.log('[MapPage] ✅ Rendering SOS marker:', {
                   id: entity.id,
                   userId: entity.userId,
@@ -727,24 +737,6 @@ export default function MapPage() {
                   lon: entity.lon,
                   type: entity.sosType,
                   status: entity.status
-                });
-              }
-              
-              const color = getMarkerColor(entity.type);
-              const isSOS = entity.type === 'sos';
-              // SOS markers should be large and always blink
-              const isLarge = isSOS;
-              // SOS markers luôn nhấp nháy đỏ cho tất cả tài khoản
-              const shouldBlink = isSOS;
-              
-              // Đảm bảo SOS marker luôn được render
-              if (isSOS) {
-                console.log('[MapPage] ✅ SOS marker props:', {
-                  isSOS,
-                  isLarge,
-                  shouldBlink,
-                  color,
-                  key: `sos-${entity.id}-${entity.lat}-${entity.lon}`
                 });
               }
 
@@ -757,7 +749,6 @@ export default function MapPage() {
                 <BlinkingUserMarker
                 key={markerKey}
                 entity={entity}
-                isCurrentUser={isCurrentUser}
                 color={color}
                 isSOS={isSOS}
                 isLarge={isLarge}

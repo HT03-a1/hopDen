@@ -199,7 +199,9 @@ router.get('/entities', authenticate, (req: Request, res: Response) => {
                   return; // Bỏ qua SOS của user khác
                 }
                 // Log khi hiển thị SOS của chính user - QUAN TRỌNG: Phải hiển thị SOS của chính mình
-                console.log(`[MAP] ✅✅✅ User ${req.userId}: Showing SOS ${sos.id} (type ${sos.type}, status ${sos.status}, location=(${sos.location.lat}, ${sos.location.lon}))`);
+                if (process.env.NODE_ENV !== 'production') {
+                  console.log(`[MAP] ✅ User ${req.userId}: Showing SOS ${sos.id} (type ${sos.type}, status ${sos.status}, location=(${sos.location.lat}, ${sos.location.lon}))`);
+                }
                 // Tiếp tục để thêm SOS vào entities (KHÔNG return ở đây)
               }
               
@@ -237,7 +239,9 @@ router.get('/entities', authenticate, (req: Request, res: Response) => {
               const user = userMap.get(sos.userId);
               
               // Log chi tiết khi thêm SOS vào entities
-              console.log(`[MAP] ✅✅✅ Adding SOS entity: id=${sos.id}, userId=${sos.userId}, type=${sos.type}, status=${sos.status}, location=(${sos.location.lat}, ${sos.location.lon})`);
+              if (process.env.NODE_ENV !== 'production') {
+                console.log(`[MAP] ✅ Adding SOS entity: id=${sos.id}, userId=${sos.userId}, type=${sos.type}, status=${sos.status}, location=(${sos.location.lat}, ${sos.location.lon})`);
+              }
               
               entities.push({
                 type: 'sos',

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import apiClient from '../api/client';
@@ -10,16 +10,79 @@ export default function RegisterStation() {
     password: '',
     phone: '',
     address: '',
-    lat: 10.7769,
-    lon: 106.7009,
+    lat: 21.0285, // Mặc định Hà Nội
+    lon: 105.8542,
     openHours: '24/7',
     type: 'medical' as 'medical' | 'rescue', // Đã gộp repair vào rescue
     description: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [gettingLocation, setGettingLocation] = useState(false);
+  const [locationError, setLocationError] = useState('');
+  const [useManualInput, setUseManualInput] = useState(false);
   const navigate = useNavigate();
   const { setAuth } = useAuthStore();
+
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationError('Trình duyệt không hỗ trợ lấy vị trí');
+      setUseManualInput(true);
+      return;
+    }
+
+    setGettingLocation(true);
+    setLocationError('');
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setFormData((prev) => ({
+          ...prev,
+          lat: position.coords.latitude,
+          lon: position.coords.longitude,
+        }));
+        setGettingLocation(false);
+        setUseManualInput(false);
+        if (import.meta.env.DEV) {
+          console.log('📍 Vị trí đã được lấy:', {
+            lat: position.coords.latitude,
+            lon: position.coords.longitude,
+          });
+        }
+      },
+      (error) => {
+        setGettingLocation(false);
+        setUseManualInput(true);
+        let errorMessage = 'Không thể lấy vị trí tự động. ';
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage += 'Vui lòng cho phép truy cập vị trí trong cài đặt trình duyệt.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage += 'Vị trí không khả dụng.';
+            break;
+          case error.TIMEOUT:
+            errorMessage += 'Hết thời gian chờ lấy vị trí.';
+            break;
+          default:
+            errorMessage += 'Đã xảy ra lỗi.';
+            break;
+        }
+        setLocationError(errorMessage);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
+  };
+
+  // Tự động lấy vị trí khi component mount
+  useEffect(() => {
+    getCurrentLocation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,36 +190,82 @@ export default function RegisterStation() {
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Nhập địa chỉ trạm"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Vĩ độ (Lat)
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Vị trí (Tọa độ)
               </label>
-              <input
-                type="number"
-                step="any"
-                value={formData.lat}
-                onChange={(e) => setFormData({ ...formData, lat: parseFloat(e.target.value) })}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              <button
+                type="button"
+                onClick={getCurrentLocation}
+                disabled={gettingLocation}
+                className="text-sm text-blue-600 hover:text-blue-800 disabled:text-gray-400 disabled:cursor-not-allowed flex items-center gap-1"
+              >
+                {gettingLocation ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Đang lấy vị trí...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Lấy vị trí tự động
+                  </>
+                )}
+              </button>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Kinh độ (Lon)
-              </label>
-              <input
-                type="number"
-                step="any"
-                value={formData.lon}
-                onChange={(e) => setFormData({ ...formData, lon: parseFloat(e.target.value) })}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+            
+            {locationError && (
+              <div className="mb-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
+                {locationError}
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">
+                  Vĩ độ (Lat)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  value={formData.lat}
+                  onChange={(e) => setFormData({ ...formData, lat: parseFloat(e.target.value) || 0 })}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="21.0285"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">
+                  Kinh độ (Lon)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  value={formData.lon}
+                  onChange={(e) => setFormData({ ...formData, lon: parseFloat(e.target.value) || 0 })}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="105.8542"
+                />
+              </div>
             </div>
+            <p className="text-xs text-gray-500 mt-1">
+              {useManualInput 
+                ? 'Vui lòng nhập tọa độ thủ công hoặc sử dụng địa chỉ để tìm vị trí.'
+                : 'Vị trí đã được lấy tự động từ thiết bị. Bạn có thể chỉnh sửa nếu cần.'}
+            </p>
           </div>
 
           <div>

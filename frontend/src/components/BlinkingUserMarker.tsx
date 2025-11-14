@@ -4,7 +4,6 @@ import { Icon, Marker as LeafletMarker } from 'leaflet';
 
 interface BlinkingUserMarkerProps {
   entity: any;
-  isCurrentUser: boolean;
   color: string;
   isSOS: boolean;
   isLarge?: boolean;
@@ -23,7 +22,7 @@ function MarkerWithBlink({
   shouldBlink,
   hasActiveSOS,
   onMarkerClick,
-}: Omit<BlinkingUserMarkerProps, 'isCurrentUser'>) {
+}: BlinkingUserMarkerProps) {
   const markerRef = useRef<LeafletMarker | null>(null);
   const [isBlinking, setIsBlinking] = useState(false);
 
@@ -85,8 +84,8 @@ function MarkerWithBlink({
     ? createCustomIcon('red', false, true) 
     : createCustomIcon(color, isSOS, isLarge);
 
-  // Log để debug SOS marker render
-  if (isSOS) {
+  // Log để debug SOS marker render (chỉ trong dev mode)
+  if (import.meta.env.DEV && isSOS) {
     console.log('[BlinkingUserMarker] Rendering SOS marker:', {
       id: entity.id,
       position: [entity.lat, entity.lon],
@@ -157,7 +156,6 @@ function MarkerWithBlink({
 
 export default function BlinkingUserMarker({
   entity,
-  isCurrentUser,
   color,
   isSOS,
   isLarge = false,
