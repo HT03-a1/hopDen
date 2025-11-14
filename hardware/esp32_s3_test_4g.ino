@@ -9,6 +9,8 @@
  * 2. Kết nối mạng GPRS/4G
  * 3. Gửi dữ liệu GPS random lên server mỗi 30 giây
  * 4. Hiển thị trạng thái trên Serial Monitor
+
+ https://webhook.site/108bad31-d139-4ff5-9e49-7ea499d7f14a
  */
 
 // Select your modem
@@ -34,8 +36,8 @@ const char user[] = "";
 const char pass[] = "";
 
 // Backend server
-const char server[] = "192.168.1.18";  // Đổi theo IP backend thực tế
-const int serverPort = 3000;
+const char server[] = "api.hopdenthongminh.cloud";  // API subdomain
+const int serverPort = 80;  // HTTP port (Cloudflare tự động redirect sang HTTPS)
 const char telemetryEndpoint[] = "/api/telemetry";
 
 // Thông tin thiết bị
@@ -51,7 +53,7 @@ const unsigned long SEND_INTERVAL_MS = 30000;  // 30 giây
 
 TinyGsm modem(SerialAT);
 TinyGsmClient client(modem);
-HttpClient httpClient(client, server, serverPort);
+// HttpClient sẽ được tạo mới trong hàm sendTelemetryToServer
 
 bool sim4gInitialized = false;
 bool sim4gNetworkOpen = false;

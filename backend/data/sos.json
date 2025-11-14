@@ -280,5 +280,39 @@
     "readyStationIds": [],
     "createdAt": "2025-11-13T18:11:57.195Z",
     "updatedAt": "2025-11-13T18:12:14.873Z"
+  },
+  {
+    "id": "SOS1763135273360",
+    "userId": "U0002",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 10.7383,
+      "lon": 105.8557
+    },
+    "status": "pending",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-14T15:47:53.360Z",
+    "updatedAt": "2025-11-14T15:47:53.361Z",
+    "assignedStationId": "S0007"
+  },
+  {
+    "id": "SOS1763136563401",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 21.0285,
+      "lon": 105.7542
+    },
+    "status": "done",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-14T16:09:23.401Z",
+    "updatedAt": "2025-11-14T16:12:19.010Z",
+    "assignedStationId": "S0005"
   }
 ]

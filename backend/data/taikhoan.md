@@ -1,12 +1,14 @@
 # Danh sách tài khoản đăng nhập
 
-*Cập nhật lần cuối: 13:36:53 14/11/2025*
+*Cập nhật lần cuối: 23:34:46 14/11/2025*
 
 ## 👤 Người dùng (Users)
 
 | ID | Tên | Email | Mật khẩu | Số điện thoại |
 |----|-----|-------|----------|---------------|
 | U0001 | Nguyễn Minh Quân | bacquandaibay@gmail.com | Quan2004 | 0335587155 |
+| U0002 | Quan nè | bacquandaibay1@gmail.com | Quan2004 | 0335587156 |
+| U0003 | Quang Huy | hehe@gmail.com | heheh@@ | 0987654321 |
 
 ---
 

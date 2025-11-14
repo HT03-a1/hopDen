@@ -4134,5 +4134,705 @@
     "speed": 25,
     "source": "hardware",
     "timestamp": "2025-11-13T18:44:06.858Z"
+  },
+  {
+    "id": "T1763136346526",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.0549,
+    "lon": 105.9926,
+    "speed": 27,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:05:46.524Z"
+  },
+  {
+    "id": "T1763136366570",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.106,
+    "lon": 105.8707,
+    "speed": 6,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:06:06.569Z"
+  },
+  {
+    "id": "T1763136396628",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.8902,
+    "lon": 105.7369,
+    "speed": 59,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:06:36.627Z"
+  },
+  {
+    "id": "T1763136426683",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.1695,
+    "lon": 106.0302,
+    "speed": 8,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:07:06.682Z"
+  },
+  {
+    "id": "T1763136456737",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.0204,
+    "lon": 106.0232,
+    "speed": 61,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:07:36.732Z"
+  },
+  {
+    "id": "T1763136486874",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.9285,
+    "lon": 105.8028,
+    "speed": 3,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:08:06.870Z"
+  },
+  {
+    "id": "T1763136517049",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.8486,
+    "lon": 105.8822,
+    "speed": 57,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:08:37.043Z"
+  },
+  {
+    "id": "T1763136554006",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.0676,
+    "lon": 105.8482,
+    "speed": 4,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:09:13.994Z"
+  },
+  {
+    "id": "T1763136578051",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.2012,
+    "lon": 106.0056,
+    "speed": 35,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:09:38.049Z"
+  },
+  {
+    "id": "T1763136608245",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.1746,
+    "lon": 105.8964,
+    "speed": 22,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:10:08.238Z"
+  },
+  {
+    "id": "T1763136638834",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.1233,
+    "lon": 105.8456,
+    "speed": 63,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:10:38.831Z"
+  },
+  {
+    "id": "T1763136669026",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.1288,
+    "lon": 105.7975,
+    "speed": 67,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:11:09.019Z"
+  },
+  {
+    "id": "T1763136699209",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.0022,
+    "lon": 105.8284,
+    "speed": 52,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:11:39.207Z"
+  },
+  {
+    "id": "T1763136729928",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.1235,
+    "lon": 106.0401,
+    "speed": 25,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:12:09.922Z"
+  },
+  {
+    "id": "T1763136760093",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.1341,
+    "lon": 105.7132,
+    "speed": 61,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:12:40.086Z"
+  },
+  {
+    "id": "T1763136790184",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.8445,
+    "lon": 105.7895,
+    "speed": 8,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:13:10.178Z"
+  },
+  {
+    "id": "T1763136820296",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.2034,
+    "lon": 105.9532,
+    "speed": 44,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:13:40.293Z"
+  },
+  {
+    "id": "T1763136851465",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.8627,
+    "lon": 106.0497,
+    "speed": 60,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:14:11.458Z"
+  },
+  {
+    "id": "T1763136913926",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.9277,
+    "lon": 105.7338,
+    "speed": 52,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:15:13.924Z"
+  },
+  {
+    "id": "T1763136941097",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.0969,
+    "lon": 105.739,
+    "speed": 32,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:15:41.092Z"
+  },
+  {
+    "id": "T1763136971563",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.1528,
+    "lon": 105.9521,
+    "speed": 76,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:16:11.561Z"
+  },
+  {
+    "id": "T1763137001693",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.8834,
+    "lon": 105.8699,
+    "speed": 36,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:16:41.692Z"
+  },
+  {
+    "id": "T1763137032029",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.1982,
+    "lon": 105.9298,
+    "speed": 33,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:17:12.024Z"
+  },
+  {
+    "id": "T1763137065775",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.9856,
+    "lon": 105.77,
+    "speed": 14,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:17:45.772Z"
+  },
+  {
+    "id": "T1763137093046",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.1364,
+    "lon": 105.7107,
+    "speed": 23,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:18:13.042Z"
+  },
+  {
+    "id": "T1763137123216",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.8831,
+    "lon": 106.0508,
+    "speed": 62,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:18:43.207Z"
+  },
+  {
+    "id": "T1763137153363",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.0754,
+    "lon": 105.9253,
+    "speed": 3,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:19:13.360Z"
+  },
+  {
+    "id": "T1763137185066",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.1122,
+    "lon": 105.8906,
+    "speed": 17,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:19:45.060Z"
+  },
+  {
+    "id": "T1763137214487",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.8357,
+    "lon": 105.8902,
+    "speed": 0,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:20:14.479Z"
+  },
+  {
+    "id": "T1763137244595",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.9456,
+    "lon": 106.0315,
+    "speed": 72,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:20:44.591Z"
+  },
+  {
+    "id": "T1763137274790",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.2122,
+    "lon": 105.7677,
+    "speed": 18,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:21:14.785Z"
+  },
+  {
+    "id": "T1763137305349",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.9853,
+    "lon": 105.9676,
+    "speed": 1,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:21:45.346Z"
+  },
+  {
+    "id": "T1763137335488",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.2071,
+    "lon": 106.002,
+    "speed": 45,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:22:15.481Z"
+  },
+  {
+    "id": "T1763137365638",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.0458,
+    "lon": 105.9135,
+    "speed": 15,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:22:45.630Z"
+  },
+  {
+    "id": "T1763137395868",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.1655,
+    "lon": 105.8305,
+    "speed": 12,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:23:15.863Z"
+  },
+  {
+    "id": "T1763137426388",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.8441,
+    "lon": 105.9784,
+    "speed": 26,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:23:46.386Z"
+  },
+  {
+    "id": "T1763137456667",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.1905,
+    "lon": 105.9622,
+    "speed": 44,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:24:16.664Z"
+  },
+  {
+    "id": "T1763137486807",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.0151,
+    "lon": 105.721,
+    "speed": 13,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:24:46.806Z"
+  },
+  {
+    "id": "T1763137516963",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.1612,
+    "lon": 105.8391,
+    "speed": 0,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:25:16.961Z"
+  },
+  {
+    "id": "T1763137547114",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.8367,
+    "lon": 105.7,
+    "speed": 16,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:25:47.113Z"
+  },
+  {
+    "id": "T1763137577272",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.0577,
+    "lon": 105.7786,
+    "speed": 69,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:26:17.270Z"
+  },
+  {
+    "id": "T1763137610965",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.2263,
+    "lon": 105.9527,
+    "speed": 45,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:26:50.964Z"
+  },
+  {
+    "id": "T1763137638522",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.8656,
+    "lon": 105.7985,
+    "speed": 45,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:27:18.520Z"
+  },
+  {
+    "id": "T1763137668695",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.0875,
+    "lon": 105.781,
+    "speed": 18,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:27:48.693Z"
+  },
+  {
+    "id": "T1763137699746",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.1718,
+    "lon": 105.8349,
+    "speed": 43,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:28:19.743Z"
+  },
+  {
+    "id": "T1763137729056",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.1485,
+    "lon": 105.8709,
+    "speed": 21,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:28:49.049Z"
+  },
+  {
+    "id": "T1763137759213",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.9172,
+    "lon": 105.8723,
+    "speed": 40,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:29:19.204Z"
+  },
+  {
+    "id": "T1763137789352",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.9107,
+    "lon": 105.6774,
+    "speed": 41,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:29:49.348Z"
+  },
+  {
+    "id": "T1763137819506",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.9327,
+    "lon": 105.7663,
+    "speed": 64,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:30:19.502Z"
+  },
+  {
+    "id": "T1763137850154",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.123,
+    "lon": 105.867,
+    "speed": 74,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:30:50.150Z"
+  },
+  {
+    "id": "T1763137882868",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.8647,
+    "lon": 105.6581,
+    "speed": 77,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:31:22.865Z"
+  },
+  {
+    "id": "T1763137924173",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.2004,
+    "lon": 105.7131,
+    "speed": 0,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:32:04.167Z"
+  },
+  {
+    "id": "T1763137941310",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.8559,
+    "lon": 105.8371,
+    "speed": 42,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:32:21.308Z"
+  },
+  {
+    "id": "T1763137971903",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.1831,
+    "lon": 105.7695,
+    "speed": 22,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:32:51.899Z"
+  },
+  {
+    "id": "T1763138002127",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.8775,
+    "lon": 105.9009,
+    "speed": 70,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:33:22.119Z"
+  },
+  {
+    "id": "T1763138032228",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.9623,
+    "lon": 105.8296,
+    "speed": 39,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:33:52.224Z"
+  },
+  {
+    "id": "T1763138062423",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.8812,
+    "lon": 105.8571,
+    "speed": 8,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:34:22.418Z"
+  },
+  {
+    "id": "T1763138123458",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.8467,
+    "lon": 105.8852,
+    "speed": 64,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:35:23.455Z"
+  },
+  {
+    "id": "T1763138189066",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.0566,
+    "lon": 105.8155,
+    "speed": 76,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:36:29.059Z"
+  },
+  {
+    "id": "T1763138217588",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.991,
+    "lon": 105.8231,
+    "speed": 18,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:36:57.587Z"
+  },
+  {
+    "id": "T1763138246706",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.8552,
+    "lon": 105.9304,
+    "speed": 27,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:37:26.705Z"
+  },
+  {
+    "id": "T1763138276881",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.89,
+    "lon": 105.7184,
+    "speed": 61,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:37:56.877Z"
+  },
+  {
+    "id": "T1763138307010",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.8697,
+    "lon": 105.6563,
+    "speed": 69,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:38:27.002Z"
+  },
+  {
+    "id": "T1763138337580",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.1141,
+    "lon": 105.8741,
+    "speed": 77,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:38:57.579Z"
+  },
+  {
+    "id": "T1763138367738",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.8685,
+    "lon": 106.0127,
+    "speed": 51,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:39:27.735Z"
+  },
+  {
+    "id": "T1763138397895",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.8711,
+    "lon": 105.8909,
+    "speed": 79,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:39:57.893Z"
+  },
+  {
+    "id": "T1763138428011",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.8678,
+    "lon": 106.0285,
+    "speed": 64,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:40:28.008Z"
+  },
+  {
+    "id": "T1763138458153",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.2035,
+    "lon": 105.9646,
+    "speed": 50,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:40:58.152Z"
+  },
+  {
+    "id": "T1763138488283",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 20.8306,
+    "lon": 105.861,
+    "speed": 44,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:41:28.281Z"
+  },
+  {
+    "id": "T1763138518433",
+    "deviceId": "DHW001",
+    "userId": "U0001",
+    "lat": 21.0985,
+    "lon": 105.9884,
+    "speed": 25,
+    "source": "hardware",
+    "timestamp": "2025-11-14T16:41:58.431Z"
   }
 ]

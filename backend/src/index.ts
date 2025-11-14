@@ -12,19 +12,48 @@ import { initializeData } from './services/dataService';
 
 const app = express();
 const httpServer = createServer(app);
+
+// CORS allowed origins
+const allowedOrigins = [
+  'https://hopdenthongminh.cloud',
+  'https://www.hopdenthongminh.cloud',
+  'http://localhost:5173',
+  'http://localhost:3000',
+];
+
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: function (origin, callback) {
+      // Allow requests with no origin (mobile apps, Postman, etc.)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: ["GET", "POST"],
     credentials: true
-  }
+  },
+  transports: ['polling', 'websocket'], // Hỗ trợ cả polling và websocket
+  allowEIO3: true, // Tương thích với client cũ
+  pingTimeout: 60000, // Tăng timeout cho Cloudflare Tunnel
+  pingInterval: 25000
 });
 
 const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 app.use(express.json());
