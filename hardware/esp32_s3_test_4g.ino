@@ -28,7 +28,7 @@
 
 // Chân SIM 4G (UART)
 #define SIM_RX_PIN  18
-#define SIM_TX_PIN  19
+#define SIM_TX_PIN  17
 
 // APN (tùy nhà mạng)
 const char apn[] = "m3-world";  // Đổi theo nhà mạng (CMNET, m3-world, v.v.)
@@ -53,7 +53,7 @@ const unsigned long SEND_INTERVAL_MS = 30000;  // 30 giây
 
 TinyGsm modem(SerialAT);
 TinyGsmClient client(modem);
-// HttpClient sẽ được tạo mới trong hàm sendTelemetryToServer
+HttpClient httpClient(client, server, serverPort);
 
 bool sim4gInitialized = false;
 bool sim4gNetworkOpen = false;

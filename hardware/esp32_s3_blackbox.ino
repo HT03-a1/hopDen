@@ -11,7 +11,7 @@
  * CHỨC NĂNG:
  * 1. Ghi nhật ký liên tục (GPS, MPU, DHT11, RTC) vào SD card
  * 2. Ghi âm vòng tròn 10 file, mỗi file 3 phút
- * 3. Phát hiện va chạm/tai nạn từ MPU-6500
+ * 3. Phát hiện va chạm/tai nạn từ MPU9250
  * 4. Cảnh báo SOS tai nạn (tự động) và cứu hộ (thủ công)
  * 5. Gửi SMS + gọi điện qua SIM 4G
  * 6. Hiển thị trạng thái trên OLED 0.96"
@@ -50,11 +50,11 @@
 #define SD_SCK   12
 #define SD_CS    10
 
-// I2C (MPU-6500, DS1307, OLED, DHT11 có thể dùng I2C hoặc GPIO)
+// I2C (MPU9250, DS1307, OLED, DHT11 có thể dùng I2C hoặc GPIO)
 #define I2C_SDA_PIN     21
 #define I2C_SCL_PIN     22
 
-// MPU-6500 (I2C, address 0x68)
+// MPU9250 (I2C, address 0x68) - Có thêm magnetometer so với MPU6500
 // DS1307 (I2C, address 0x68 - khác với MPU nếu dùng I2C mux hoặc địa chỉ khác)
 // OLED SSD1306 (I2C, address 0x3C)
 
@@ -161,8 +161,8 @@ const char user[] = "";
 const char pass[] = "";
 
 // Backend server
-const char server[] = "192.168.1.18";  // Đổi theo IP backend thực tế
-const int serverPort = 3000;
+const char server[] = "api.hopdenthongminh.cloud";  // API subdomain
+const int serverPort = 80;  // HTTP port (Cloudflare tự động redirect sang HTTPS)
 
 // Biến toàn cục
 SystemState systemState;
@@ -184,6 +184,12 @@ bool sim4gInitialized = false;
 bool sim4gNetworkOpen = false;
 String authToken = "";  // Token sau khi login (nếu cần)
 unsigned long lastTelemetrySend = 0;
+
+// Biến để tính vận tốc offline từ GPS
+float lastGPSLat = 0;
+float lastGPSLon = 0;
+unsigned long lastGPSTime = 0;
+bool hasLastGPS = false;
 
 // Buffer cho audio
 int16_t audioBuffer[AUDIO_BUFFER_SIZE];
@@ -239,8 +245,8 @@ void setup() {
     Serial.println("RTC DS1307 initialized");
   }
   
-  // Khởi tạo MPU-6500
-  initMPU6500();
+  // Khởi tạo MPU9250
+  initMPU9250();
   
   // Khởi tạo GPS
   SerialGPS.begin(9600, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
@@ -304,56 +310,91 @@ void loop() {
 }
 
 // ============================================
-// KHỞI TẠO MPU-6500
+// KHỞI TẠO MPU9250
 // ============================================
 
-void initMPU6500() {
-  Wire.beginTransmission(0x68); // MPU-6500 I2C address
-  Wire.write(0x6B); // PWR_MGMT_1 register
-  Wire.write(0x00); // Wake up MPU-6500
-  Wire.endTransmission();
+void initMPU9250() {
+  // Kiểm tra kết nối MPU9250
+  Wire.beginTransmission(0x68); // MPU9250 I2C address (0x68)
+  if (Wire.endTransmission() != 0) {
+    Serial.println("ERROR: MPU9250 not found at address 0x68!");
+    return;
+  }
   
-  // Configure accelerometer range (±2g)
+  // Wake up MPU9250 (PWR_MGMT_1 register)
+  Wire.beginTransmission(0x68);
+  Wire.write(0x6B); // PWR_MGMT_1 register
+  Wire.write(0x00); // Wake up (clear sleep bit)
+  Wire.endTransmission();
+  delay(10);
+  
+  // Configure accelerometer range (±2g) - Độ chính xác cao hơn
   Wire.beginTransmission(0x68);
   Wire.write(0x1C); // ACCEL_CONFIG register
-  Wire.write(0x00); // ±2g
+  Wire.write(0x00); // ±2g (AFS_SEL = 0)
   Wire.endTransmission();
+  delay(10);
   
-  // Configure gyroscope range (±250°/s)
+  // Configure gyroscope range (±250°/s) - Độ nhạy cao
   Wire.beginTransmission(0x68);
   Wire.write(0x1B); // GYRO_CONFIG register
-  Wire.write(0x00); // ±250°/s
+  Wire.write(0x00); // ±250°/s (FS_SEL = 0)
   Wire.endTransmission();
+  delay(10);
   
-  Serial.println("MPU-6500 initialized");
+  // Configure DLPF (Digital Low Pass Filter) cho độ chính xác tốt hơn
+  Wire.beginTransmission(0x68);
+  Wire.write(0x1A); // CONFIG register
+  Wire.write(0x03); // DLPF_CFG = 3 (44Hz cho accel, 42Hz cho gyro)
+  Wire.endTransmission();
+  delay(10);
+  
+  // Configure sample rate (1kHz)
+  Wire.beginTransmission(0x68);
+  Wire.write(0x19); // SMPLRT_DIV register
+  Wire.write(0x04); // Sample rate = 1kHz / (1 + 4) = 200Hz
+  Wire.endTransmission();
+  delay(10);
+  
+  Serial.println("MPU9250 initialized (with improved accuracy settings)");
 }
 
 // ============================================
 // ĐỌC DỮ LIỆU TỪ CẢM BIẾN
 // ============================================
 
-void readMPU6500(SensorData* data) {
+void readMPU9250(SensorData* data) {
   Wire.beginTransmission(0x68);
-  Wire.write(0x3B); // ACCEL_XOUT_H register
+  Wire.write(0x3B); // ACCEL_XOUT_H register (đọc từ đây)
   Wire.endTransmission(false);
-  Wire.requestFrom(0x68, 14, true);
+  Wire.requestFrom(0x68, 14, true); // Đọc 14 bytes (6 accel + 2 temp + 6 gyro)
   
+  // Đọc dữ liệu accelerometer (16-bit, big-endian)
   int16_t accelX = (Wire.read() << 8 | Wire.read());
   int16_t accelY = (Wire.read() << 8 | Wire.read());
   int16_t accelZ = (Wire.read() << 8 | Wire.read());
-  Wire.read(); // Temperature (skip)
+  
+  // Bỏ qua temperature (2 bytes)
+  Wire.read();
+  Wire.read();
+  
+  // Đọc dữ liệu gyroscope (16-bit, big-endian)
   int16_t gyroX = (Wire.read() << 8 | Wire.read());
   int16_t gyroY = (Wire.read() << 8 | Wire.read());
   int16_t gyroZ = (Wire.read() << 8 | Wire.read());
   
   // Convert to g (accel) and °/s (gyro)
-  // Scale factor: ±2g = 16384 LSB/g, ±250°/s = 131 LSB/°/s
+  // MPU9250 scale factors (giống MPU6500):
+  // Accelerometer: ±2g = 16384 LSB/g
+  // Gyroscope: ±250°/s = 131 LSB/°/s
   data->ax = accelX / 16384.0f;
   data->ay = accelY / 16384.0f;
   data->az = accelZ / 16384.0f;
   data->gx = gyroX / 131.0f;
   data->gy = gyroY / 131.0f;
   data->gz = gyroZ / 131.0f;
+  
+  // MPU9250 có độ chính xác cao hơn MPU6500, đặc biệt ở gia tốc thấp
 }
 
 void readDHT11(SensorData* data) {
@@ -365,13 +406,64 @@ void readDHT11(SensorData* data) {
   }
 }
 
+// Hàm tính khoảng cách giữa 2 điểm GPS (Haversine formula)
+float calculateDistance(float lat1, float lon1, float lat2, float lon2) {
+  const float R = 6371000.0;  // Bán kính Trái Đất (mét)
+  float dLat = (lat2 - lat1) * PI / 180.0;
+  float dLon = (lon2 - lon1) * PI / 180.0;
+  float a = sin(dLat / 2.0) * sin(dLat / 2.0) +
+            cos(lat1 * PI / 180.0) * cos(lat2 * PI / 180.0) *
+            sin(dLon / 2.0) * sin(dLon / 2.0);
+  float c = 2.0 * atan2(sqrt(a), sqrt(1.0 - a));
+  return R * c;
+}
+
+// Hàm tính vận tốc từ 2 điểm GPS và thời gian
+float calculateSpeedFromGPS(float lat1, float lon1, unsigned long time1,
+                             float lat2, float lon2, unsigned long time2) {
+  if (time2 <= time1) {
+    return 0.0;
+  }
+  float distance = calculateDistance(lat1, lon1, lat2, lon2);
+  float timeSeconds = (time2 - time1) / 1000.0;
+  if (timeSeconds <= 0) {
+    return 0.0;
+  }
+  float speedMs = distance / timeSeconds;
+  return speedMs * 3.6;  // Chuyển m/s sang km/h
+}
+
 void readGPS(SensorData* data) {
   while (SerialGPS.available() > 0) {
     if (gps.encode(SerialGPS.read())) {
       if (gps.location.isValid()) {
         data->lat = gps.location.lat();
         data->lon = gps.location.lng();
-        data->speed = gps.speed.kmph();
+        
+        // Ưu tiên dùng speed từ GPS nếu có
+        if (gps.speed.isValid() && gps.speed.kmph() > 0) {
+          data->speed = gps.speed.kmph();
+        } else {
+          // Tính vận tốc offline từ 2 điểm GPS liên tiếp
+          unsigned long currentTime = millis();
+          if (hasLastGPS && (currentTime - lastGPSTime) > 1000) {  // Ít nhất 1 giây
+            float calculatedSpeed = calculateSpeedFromGPS(
+              lastGPSLat, lastGPSLon, lastGPSTime,
+              data->lat, data->lon, currentTime
+            );
+            data->speed = calculatedSpeed;
+            Serial.printf("[GPS] Calculated speed: %.2f km/h (from GPS points)\n", calculatedSpeed);
+          } else {
+            data->speed = 0.0;  // Chưa đủ dữ liệu để tính
+          }
+        }
+        
+        // Cập nhật điểm GPS trước để tính vận tốc lần sau
+        lastGPSLat = data->lat;
+        lastGPSLon = data->lon;
+        lastGPSTime = millis();
+        hasLastGPS = true;
+        
         data->valid = true;
       } else {
         data->valid = false;
@@ -588,7 +680,7 @@ void taskSensors(void* parameter) {
     SensorData data;
     data.valid = false;
     
-    readMPU6500(&data);
+    readMPU9250(&data);
     readDHT11(&data);
     readGPS(&data);
     readRTC(&data);
