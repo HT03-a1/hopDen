@@ -163,7 +163,7 @@ GND              --                -- Chân còn lại
 ```
 ESP32-S3          Buzzer
 --------          ------
-GPIO 15           -- Chân dương (+)
+GPIO 45           -- Chân dương (+)
 GND               -- Chân âm (-)
 ```
 
