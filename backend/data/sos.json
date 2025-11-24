@@ -580,13 +580,14 @@
       "lat": 10.7383,
       "lon": 105.8557
     },
-    "status": "pending",
+    "status": "cancelled",
     "note": "",
     "rejectedStationIds": [],
-    "readyStationIds": [],
     "createdAt": "2025-11-14T18:07:09.027Z",
-    "updatedAt": "2025-11-14T18:07:09.032Z",
-    "assignedStationId": "S0007"
+    "updatedAt": "2025-11-15T07:34:26.643Z",
+    "readyStationIds": [
+      "S0033"
+    ]
   },
   {
     "id": "SOS1763144313588",
@@ -637,5 +638,150 @@
     "readyStationIds": [],
     "createdAt": "2025-11-14T18:30:41.383Z",
     "updatedAt": "2025-11-14T18:30:55.790Z"
+  },
+  {
+    "id": "SOS1763172397227",
+    "userId": "U0005",
+    "type": "accident",
+    "severity": "critical",
+    "location": {
+      "lat": 10.7769,
+      "lon": 106.7009
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-15T02:06:37.227Z",
+    "updatedAt": "2025-11-15T02:06:44.933Z"
+  },
+  {
+    "id": "SOS1763172442766",
+    "userId": "U0005",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 10.7769,
+      "lon": 106.7009
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-15T02:07:22.766Z",
+    "updatedAt": "2025-11-15T02:07:32.671Z"
+  },
+  {
+    "id": "SOS1763172574103",
+    "userId": "U0005",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 10.7769,
+      "lon": 106.7009
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-15T02:09:34.103Z",
+    "updatedAt": "2025-11-15T02:11:40.349Z"
+  },
+  {
+    "id": "SOS1763172742294",
+    "userId": "U0005",
+    "type": "breakdown",
+    "severity": "medium",
+    "location": {
+      "lat": 10.7769,
+      "lon": 106.7009
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-15T02:12:22.294Z",
+    "updatedAt": "2025-11-15T02:14:24.451Z"
+  },
+  {
+    "id": "SOS1763193041041",
+    "userId": "U0006",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 21.2376665,
+      "lon": 105.8654175
+    },
+    "status": "cancelled",
+    "note": "Ngã xe",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-15T07:50:41.041Z",
+    "updatedAt": "2025-11-15T07:50:59.605Z"
+  },
+  {
+    "id": "SOS1763193076428",
+    "userId": "U0001",
+    "type": "breakdown",
+    "severity": "medium",
+    "location": {
+      "lat": 21.149616,
+      "lon": 105.8192259
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-15T07:51:16.428Z",
+    "updatedAt": "2025-11-15T07:51:29.119Z"
+  },
+  {
+    "id": "SOS1763194286720",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 21.149616,
+      "lon": 105.8192259
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-15T08:11:26.720Z",
+    "updatedAt": "2025-11-15T08:12:50.446Z"
+  },
+  {
+    "id": "SOS1763194377938",
+    "userId": "U0001",
+    "type": "breakdown",
+    "severity": "medium",
+    "location": {
+      "lat": 21.149616,
+      "lon": 105.8192259
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-15T08:12:57.938Z",
+    "updatedAt": "2025-11-15T08:38:06.085Z"
+  },
+  {
+    "id": "SOS1763194392055",
+    "userId": "U0006",
+    "type": "breakdown",
+    "severity": "medium",
+    "location": {
+      "lat": 21.2376665,
+      "lon": 105.8654175
+    },
+    "status": "pending",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-15T08:13:12.055Z",
+    "updatedAt": "2025-11-15T08:13:12.057Z",
+    "assignedStationId": "S0036"
   }
 ]

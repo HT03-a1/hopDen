@@ -54,21 +54,21 @@
 #define I2C_SDA_PIN     21
 #define I2C_SCL_PIN     22
 
-// MPU9250 (I2C, address 0x68) - Có thêm magnetometer so với MPU6500
-// DS1307 (I2C, address 0x68 - khác với MPU nếu dùng I2C mux hoặc địa chỉ khác)
+// MPU9250 (I2C, address 0x69) - AD0 nối lên 3.3V (HIGH) để đổi địa chỉ từ 0x68 sang 0x69
+// DS1307 (I2C, address 0x68) - Không xung đột với MPU9250 nữa
 // OLED SSD1306 (I2C, address 0x3C)
 
 // DHT11
 #define DHT_PIN         2
 #define DHT_TYPE        DHT11
 
-// GPS NEO-6M (UART)
+// GPS NEO-8M (UART)
 #define GPS_RX_PIN      16
-#define GPS_TX_PIN      17
+#define GPS_TX_PIN      20  // Đổi sang GPIO 20 để nhường GPIO 17 cho SIM
 
-// SIM 4G (UART) - TinyGSM
-#define SIM_RX_PIN      18
-#define SIM_TX_PIN      19
+// SIM 4G (UART) - TinyGSM - Dùng GPIO 17, 18
+#define SIM_RX_PIN      18  // Nhận từ SIM TX
+#define SIM_TX_PIN      17  // Gửi đến SIM RX
 #define SerialSIM       Serial2
 
 // Nút nhấn
@@ -315,48 +315,50 @@ void loop() {
 
 void initMPU9250() {
   // Kiểm tra kết nối MPU9250
-  Wire.beginTransmission(0x68); // MPU9250 I2C address (0x68)
+  // Địa chỉ 0x69 vì AD0 nối lên 3.3V (HIGH)
+  Wire.beginTransmission(0x69); // MPU9250 I2C address (0x69 - AD0 = HIGH)
   if (Wire.endTransmission() != 0) {
-    Serial.println("ERROR: MPU9250 not found at address 0x68!");
+    Serial.println("ERROR: MPU9250 not found at address 0x69!");
+    Serial.println("Check AD0 pin connection (should be HIGH/3.3V)");
     return;
   }
   
   // Wake up MPU9250 (PWR_MGMT_1 register)
-  Wire.beginTransmission(0x68);
+  Wire.beginTransmission(0x69);
   Wire.write(0x6B); // PWR_MGMT_1 register
   Wire.write(0x00); // Wake up (clear sleep bit)
   Wire.endTransmission();
   delay(10);
   
   // Configure accelerometer range (±2g) - Độ chính xác cao hơn
-  Wire.beginTransmission(0x68);
+  Wire.beginTransmission(0x69);
   Wire.write(0x1C); // ACCEL_CONFIG register
   Wire.write(0x00); // ±2g (AFS_SEL = 0)
   Wire.endTransmission();
   delay(10);
   
   // Configure gyroscope range (±250°/s) - Độ nhạy cao
-  Wire.beginTransmission(0x68);
+  Wire.beginTransmission(0x69);
   Wire.write(0x1B); // GYRO_CONFIG register
   Wire.write(0x00); // ±250°/s (FS_SEL = 0)
   Wire.endTransmission();
   delay(10);
   
   // Configure DLPF (Digital Low Pass Filter) cho độ chính xác tốt hơn
-  Wire.beginTransmission(0x68);
+  Wire.beginTransmission(0x69);
   Wire.write(0x1A); // CONFIG register
   Wire.write(0x03); // DLPF_CFG = 3 (44Hz cho accel, 42Hz cho gyro)
   Wire.endTransmission();
   delay(10);
   
   // Configure sample rate (1kHz)
-  Wire.beginTransmission(0x68);
+  Wire.beginTransmission(0x69);
   Wire.write(0x19); // SMPLRT_DIV register
   Wire.write(0x04); // Sample rate = 1kHz / (1 + 4) = 200Hz
   Wire.endTransmission();
   delay(10);
   
-  Serial.println("MPU9250 initialized (with improved accuracy settings)");
+  Serial.println("MPU9250 initialized at address 0x69 (AD0 = HIGH)");
 }
 
 // ============================================
@@ -364,10 +366,10 @@ void initMPU9250() {
 // ============================================
 
 void readMPU9250(SensorData* data) {
-  Wire.beginTransmission(0x68);
+  Wire.beginTransmission(0x69); // MPU9250 address 0x69 (AD0 = HIGH)
   Wire.write(0x3B); // ACCEL_XOUT_H register (đọc từ đây)
   Wire.endTransmission(false);
-  Wire.requestFrom(0x68, 14, true); // Đọc 14 bytes (6 accel + 2 temp + 6 gyro)
+  Wire.requestFrom(0x69, 14, true); // Đọc 14 bytes (6 accel + 2 temp + 6 gyro)
   
   // Đọc dữ liệu accelerometer (16-bit, big-endian)
   int16_t accelX = (Wire.read() << 8 | Wire.read());

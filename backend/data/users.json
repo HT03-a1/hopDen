@@ -6,13 +6,13 @@
     "password": "Quan2004",
     "phone": "0335587155",
     "address": "Lại Đà Đông Hội, Hà Nội",
-    "lat": 20.9437,
-    "lon": 105.8115,
+    "lat": 21.149616,
+    "lon": 105.8192259,
     "createdAt": "2025-11-13T16:44:19.873Z",
-    "lastLocationSource": "hardware",
-    "lastLocationUpdatedAt": "2025-11-14T17:30:25.515Z",
+    "lastLocationSource": "mobile",
+    "lastLocationUpdatedAt": "2025-11-15T07:44:45.060Z",
     "lastHardwareLocationAt": "2025-11-14T17:30:25.515Z",
-    "lastMobileLocationAt": "2025-11-14T17:04:25.887Z"
+    "lastMobileLocationAt": "2025-11-15T07:44:45.060Z"
   },
   {
     "id": "U0002",
@@ -52,5 +52,44 @@
     "lat": 10.7769,
     "lon": 106.7009,
     "createdAt": "2025-11-14T16:44:30.783Z"
+  },
+  {
+    "id": "U0005",
+    "name": "dunngxx",
+    "email": "qeuwoe@gmail.com",
+    "password": "123456",
+    "phone": "123456",
+    "address": "rề",
+    "lat": 10.7769,
+    "lon": 106.7009,
+    "createdAt": "2025-11-15T01:56:52.328Z"
+  },
+  {
+    "id": "U0006",
+    "name": "Quang Huy",
+    "email": "huyhuy@gmail.com",
+    "password": "Quan2004",
+    "phone": "0123456789",
+    "address": "Mạch Tràng Cổ Loa",
+    "lat": 21.2376665,
+    "lon": 105.8654175,
+    "createdAt": "2025-11-15T07:47:28.315Z",
+    "lastLocationSource": "mobile",
+    "lastLocationUpdatedAt": "2025-11-15T07:50:05.088Z",
+    "lastMobileLocationAt": "2025-11-15T07:50:05.088Z"
+  },
+  {
+    "id": "U0007",
+    "name": "Dũng",
+    "email": "dung@gmail.com",
+    "password": "123456",
+    "phone": "0123456789",
+    "address": "Cổ loa đông anh",
+    "lat": 21.2003101,
+    "lon": 105.7834637,
+    "createdAt": "2025-11-15T07:54:17.631Z",
+    "lastLocationSource": "mobile",
+    "lastLocationUpdatedAt": "2025-11-15T07:57:00.218Z",
+    "lastMobileLocationAt": "2025-11-15T07:57:00.218Z"
   }
 ]

@@ -1,6 +1,6 @@
 # Danh sách tài khoản đăng nhập
 
-*Cập nhật lần cuối: 01:18:02 15/11/2025*
+*Cập nhật lần cuối: 19:15:25 17/11/2025*
 
 ## 👤 Người dùng (Users)
 
@@ -10,6 +10,9 @@
 | U0002 | Quan nè | bacquandaibay1@gmail.com | Quan2004 | 0335587156 |
 | U0003 | Quang Huy | hehe@gmail.com | heheh@@ | 0987654321 |
 | U0004 | Tuấn Dũng | 123456789@gmail.com | 123456 | 123456 |
+| U0005 | dunngxx | qeuwoe@gmail.com | 123456 | 123456 |
+| U0006 | Quang Huy | huyhuy@gmail.com | Quan2004 | 0123456789 |
+| U0007 | Dũng | dung@gmail.com | 123456 | 0123456789 |
 
 ---
 
@@ -28,6 +31,10 @@
 | S0009 | Bệnh viện Tim Hà Nội | timhn@example.com | password123 | 02438253731 | 92 Trần Hưng Đạo, Hoàn Kiếm, Hà Nội |
 | S0010 | Bệnh viện Mắt Trung ương | mattruong@example.com | password123 | 02438253731 | 85 Bà Triệu, Hoàn Kiếm, Hà Nội |
 | S0031 | Y tế huy | hehe0@gmail.com | heheh@@ | 0123456789 | lại đà- đông anh |
+| S0032 | Trạm sửa xe Quân phụ tùng | bacquandaibay2@gmail.com | quan2004 | 0335587166 | 55 đường lại đà đông hội đông anh hà nội |
+| S0033 | dugx | 1234567@gmail.com | 1234567 | 1234567 | cổ loa |
+| S0035 | Trạm Y Tế Huy  | hehe1@gmail.com | heheh@@ | 0123456799 | Cổ Loa - Đông Anh - HN |
+| S0037 | Trạm Y Tế Vân Nội | hehe3@gmail.com | heheh@@ | 01234569999 | Vân Nội |
 
 ---
 
@@ -55,6 +62,8 @@
 | S0028 | Trạm sửa xe Tây Hồ | suaxetayho@example.com | password123 | 02438258901 | 456 Lạc Long Quân, Tây Hồ, Hà Nội |
 | S0029 | Garage Hoàng Mai | garagehoangmai@example.com | password123 | 02438259012 | 789 Giải Phóng, Hoàng Mai, Hà Nội |
 | S0030 | Trạm sửa xe Nam Từ Liêm | suaxenamtuliem@example.com | password123 | 02438250123 | 321 Phạm Hùng, Nam Từ Liêm, Hà Nội |
+| S0034 | 123458 | dwhdwhdw@gmail.com | jdcdjh | 28398329 | ưewqie |
+| S0036 | Trạm sửa xe Vân Nội | hehe2@gmail.com | heheh@@ | 01234567999 | Vân Nội - Đông Anh - HN |
 
 ---
 

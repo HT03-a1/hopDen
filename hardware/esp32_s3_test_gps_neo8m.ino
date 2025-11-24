@@ -19,7 +19,7 @@
 
 // GPS NEO-8M (UART)
 #define GPS_RX_PIN      16
-#define GPS_TX_PIN      17
+#define GPS_TX_PIN      20  // Đổi sang GPIO 20 để nhường GPIO 17 cho SIM 4G
 #define GPS_BAUD        9600
 
 // Serial cho GPS

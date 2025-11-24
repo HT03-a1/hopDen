@@ -1,28 +1,21 @@
 /*
- * ESP32-S3 TEST DS1307 RTC MODULE
+ * ESP32-S3 TEST DS1307 RTC - FIXED VERSION
  * 
- * Mục đích: Test module thời gian thực DS1307
+ * Sửa code mẫu của thư viện RTClib để dùng chân I2C tùy chỉnh
  * 
- * Chức năng:
- * 1. Khởi tạo DS1307 qua I2C
- * 2. Đặt thời gian (nếu cần)
- * 3. Đọc và hiển thị thời gian liên tục
- * 4. Kiểm tra pin backup (battery)
- * 5. Kiểm tra xem RTC có đang chạy không
+ * VẤN ĐỀ: Code mẫu dùng Wire.begin() mặc định (GPIO 21, 22)
+ * GIẢI PHÁP: Phải gọi Wire.begin(SDA, SCL) với chân đúng trước rtc.begin()
  */
 
 #include <Wire.h>
 #include <RTClib.h>
 
 // ============================================
-// CẤU HÌNH
+// CẤU HÌNH CHÂN I2C (THEO SƠ ĐỒ MỚI)
 // ============================================
 
-// I2C Pins (theo sơ đồ mới)
 #define I2C_SDA_PIN     8
 #define I2C_SCL_PIN     9
-
-// DS1307 I2C Address: 0x68
 
 // ============================================
 // BIẾN TOÀN CỤC
@@ -36,43 +29,59 @@ RTC_DS1307 rtc;
 
 void setup() {
   Serial.begin(115200);
-  delay(1000);
+  delay(2000);  // Đợi Serial Monitor
   
-  Serial.println("\n\n=== ESP32-S3 TEST DS1307 RTC MODULE ===");
+  Serial.println("\n\n=== ESP32-S3 TEST DS1307 RTC (FIXED) ===");
+  Serial.println("==========================================\n");
   
-  // Khởi tạo I2C
-  Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN);
-  Serial.println("I2C initialized");
+  // QUAN TRỌNG: Khởi tạo I2C với chân tùy chỉnh TRƯỚC KHI khởi tạo RTC
+  Serial.print("Initializing I2C with custom pins... ");
+  Serial.print("SDA: GPIO ");
+  Serial.print(I2C_SDA_PIN);
+  Serial.print(", SCL: GPIO ");
+  Serial.println(I2C_SCL_PIN);
   
-  // Khởi tạo DS1307
+  Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN);  // ← QUAN TRỌNG: Phải có dòng này!
+  delay(100);  // Đợi I2C ổn định
+  
+  Serial.println("✓ I2C initialized\n");
+  
+  // Bây giờ mới khởi tạo DS1307
+  Serial.print("Initializing DS1307... ");
+  
   if (!rtc.begin()) {
     Serial.println("❌ ERROR: DS1307 RTC not found!");
-    Serial.println("Kiểm tra:");
-    Serial.println("  - Kết nối I2C (SDA, SCL)");
-    Serial.println("  - Địa chỉ I2C: 0x68");
-    Serial.println("  - Nguồn cấp cho DS1307");
-    while (1) delay(1000);  // Dừng nếu không tìm thấy
+    Serial.println("\nKiểm tra:");
+    Serial.println("  - I2C connections (SDA: GPIO 8, SCL: GPIO 9)");
+    Serial.println("  - I2C address: 0x68");
+    Serial.println("  - Power supply (3.3V)");
+    Serial.println("  - Pull-up resistors (4.7kΩ)");
+    Serial.println("\nLưu ý: Phải gọi Wire.begin(SDA, SCL) trước rtc.begin()!");
+    while (1) {
+      delay(1000);
+      Serial.print(".");
+    }
   }
   
-  Serial.println("✔ DS1307 RTC found!");
+  Serial.println("✓ DS1307 RTC found!");
   
-  // Kiểm tra xem RTC có đang chạy không
+  // Kiểm tra RTC có đang chạy không
   if (!rtc.isrunning()) {
-    Serial.println("⚠️ WARNING: RTC is NOT running!");
+    Serial.println("\n⚠️ WARNING: RTC is NOT running!");
     Serial.println("Setting time from compile time...");
     
     // Đặt thời gian từ thời gian compile
     rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-    Serial.println("Time set from compile time");
+    Serial.println("✓ Time set from compile time");
   } else {
-    Serial.println("✔ RTC is running");
+    Serial.println("✓ RTC is running");
   }
   
   // Hiển thị thời gian hiện tại
   DateTime now = rtc.now();
   Serial.println("\n=== CURRENT TIME ===");
   printDateTime(now);
-  Serial.println("===================\n");
+  Serial.println("\n===================\n");
   
   Serial.println("Reading time every second...");
   Serial.println("Format: YYYY-MM-DD HH:MM:SS (Day of week)");
@@ -131,31 +140,11 @@ void printDateTime(DateTime dt) {
 // ============================================
 
 void setTimeManually() {
-  // Ví dụ: Đặt thời gian 2025-01-13 14:30:00
+  // Ví dụ: Đặt thời gian 2025-01-15 10:30:00
   // Format: DateTime(year, month, day, hour, minute, second)
-  rtc.adjust(DateTime(2025, 1, 13, 14, 30, 0));
-  Serial.println("Time set manually to: 2025-01-13 14:30:00");
+  rtc.adjust(DateTime(2025, 1, 15, 10, 30, 0));
+  Serial.println("Time set manually to: 2025-01-15 10:30:00");
 }
 
-// ============================================
-// HÀM KIỂM TRA PIN BACKUP
-// ============================================
 
-void checkBattery() {
-  // DS1307 có pin backup (CR2032) để duy trì thời gian khi mất điện
-  // Không có hàm trực tiếp để kiểm tra pin, nhưng có thể kiểm tra:
-  // - Nếu RTC không chạy sau khi mất điện → pin hết hoặc không có pin
-  // - Nếu RTC vẫn chạy sau khi mất điện → pin còn tốt
-  
-  Serial.println("\n=== BATTERY CHECK ===");
-  Serial.println("DS1307 uses CR2032 battery for backup");
-  Serial.println("To check battery:");
-  Serial.println("  1. Note current time");
-  Serial.println("  2. Disconnect power");
-  Serial.println("  3. Wait a few minutes");
-  Serial.println("  4. Reconnect power");
-  Serial.println("  5. Check if time is still correct");
-  Serial.println("If time is wrong → battery may be dead");
-  Serial.println("===================\n");
-}
 
