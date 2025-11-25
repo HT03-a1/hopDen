@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface StationSidePanelProps {
   profile: any;
@@ -33,6 +33,12 @@ export default function StationSidePanel({
   onShowRoute,
 }: StationSidePanelProps) {
   const [expandedSection, setExpandedSection] = useState<string | null>('sos');
+  const [now, setNow] = useState<number>(() => Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, []);
   
   // Tính khoảng cách từ trạm đến SOS
   const getDistance = (sos: any): number | null => {
@@ -40,6 +46,24 @@ export default function StationSidePanel({
       return null;
     }
     return calculateDistance(profile.lat, profile.lon, sos.location.lat, sos.location.lon);
+  };
+
+  const getAssignmentCountdown = (sos: any) => {
+    if (!sos.assignmentExpiresAt) {
+      return null;
+    }
+    const expiresAt = Date.parse(sos.assignmentExpiresAt);
+    if (Number.isNaN(expiresAt)) {
+      return null;
+    }
+    const diff = expiresAt - now;
+    const remaining = Math.max(0, diff);
+    const minutes = Math.floor(remaining / 60000);
+    const seconds = Math.floor((remaining % 60000) / 1000);
+    return {
+      diff,
+      label: `${minutes}:${seconds.toString().padStart(2, '0')}`
+    };
   };
 
   const getStatusColor = (status: string) => {
@@ -137,8 +161,51 @@ export default function StationSidePanel({
               {sosList.length === 0 ? (
                 <p className="text-xs sm:text-sm text-gray-500">Không có SOS nào</p>
               ) : (
-                sosList.map((sos) => (
-                  <div key={sos.id} className="border rounded-lg p-2 sm:p-3 bg-gray-50">
+                sosList.map((sos) => {
+                  const renderRouteButton = () => {
+                    if (
+                      sos.status === 'done' ||
+                      sos.status === 'cancelled' ||
+                      !onShowRoute ||
+                      !profile?.lat ||
+                      !profile?.lon ||
+                      !sos.location
+                    ) {
+                      return null;
+                    }
+
+                    const fromLat = parseFloat(profile.lat);
+                    const fromLon = parseFloat(profile.lon);
+                    const toLat = parseFloat(sos.location.lat);
+                    const toLon = parseFloat(sos.location.lon);
+                    const isActiveAssignment =
+                      sos.assignedStationId === profile.id &&
+                      (sos.status === 'accepted' || sos.status === 'on_route');
+
+                    const buttonClass = isActiveAssignment
+                      ? 'bg-purple-500 hover:bg-purple-600'
+                      : 'bg-blue-500 hover:bg-blue-600';
+
+                    return (
+                      <button
+                        onClick={() => {
+                          console.log('Showing route:', {
+                            from: { lat: fromLat, lon: fromLon },
+                            to: { lat: toLat, lon: toLon },
+                            sosId: sos.id,
+                          });
+                          onShowRoute(fromLat, fromLon, toLat, toLon);
+                        }}
+                        className={`text-[10px] sm:text-xs ${buttonClass} text-white px-2 sm:px-3 py-1 rounded transition`}
+                      >
+                        🗺️ Chỉ đường
+                      </button>
+                    );
+                  };
+
+                  return (
+                    <div key={sos.id} className="border rounded-lg p-2 sm:p-3 bg-gray-50">
+
                     <div className="flex justify-between items-start mb-2">
                       <div>
                         <div className="font-semibold">
@@ -158,6 +225,24 @@ export default function StationSidePanel({
                     {sos.note && (
                       <div className="text-sm text-gray-700 mb-2">{sos.note}</div>
                     )}
+                    {sos.status === 'pending' && sos.assignedStationId === profile?.id && (() => {
+                      const countdown = getAssignmentCountdown(sos);
+                      if (!countdown) {
+                        return null;
+                      }
+                      const isActive = countdown.diff > 0;
+                      return (
+                        <div
+                          className={`text-xs font-semibold mb-2 ${
+                            isActive ? 'text-orange-600' : 'text-red-600'
+                          }`}
+                        >
+                          {isActive
+                            ? `⏱️ Còn ${countdown.label} để nhận nhiệm vụ`
+                            : '⏳ Hết thời gian nhận, hệ thống đang chuyển sang trạm khác'}
+                        </div>
+                      );
+                    })()}
                     <div className="text-xs text-gray-500 mb-2">
                       {new Date(sos.createdAt).toLocaleString('vi-VN')}
                     </div>
@@ -177,10 +262,15 @@ export default function StationSidePanel({
                       </div>
                     )}
                     <div className="flex flex-wrap gap-2">
-                      {sos.status === 'pending' && (
-                        <>
-                          {/* Nếu SOS đã được gán cho trạm này, hiển thị cả nút Nhận và Không nhận */}
-                          {sos.assignedStationId === profile.id ? (
+                      {sos.status === 'pending' && (() => {
+                        const countdown =
+                          sos.assignedStationId === profile.id
+                            ? getAssignmentCountdown(sos)
+                            : null;
+                        const claimWindowActive = countdown ? countdown.diff > 0 : false;
+
+                        if (sos.assignedStationId === profile.id && claimWindowActive) {
+                          return (
                             <>
                               <button
                                 onClick={() => onClaimSOS(sos.id)}
@@ -190,7 +280,11 @@ export default function StationSidePanel({
                               </button>
                               <button
                                 onClick={() => {
-                                  if (window.confirm('Bạn có chắc chắn không nhận nhiệm vụ này? Hệ thống sẽ tự động chuyển sang trạm khác.')) {
+                                  if (
+                                    window.confirm(
+                                      'Bạn có chắc chắn không nhận nhiệm vụ này? Hệ thống sẽ tự động chuyển sang trạm khác.'
+                                    )
+                                  ) {
                                     onUpdateStatus(sos.id, 'cancelled');
                                   }
                                 }}
@@ -199,50 +293,31 @@ export default function StationSidePanel({
                                 ❌ Không nhận nhiệm vụ
                               </button>
                             </>
-                          ) : (
-                            /* Nếu SOS chưa được gán cho trạm này, hiển thị nút "Sẵn sàng nhận nhiệm vụ" */
-                            (() => {
-                              const isReady = sos.readyStationIds?.includes(profile.id) || false;
-                              return (
-                                <button
-                                  onClick={() => {
-                                    if (onToggleReady) {
-                                      onToggleReady(sos.id, !isReady);
-                                    }
-                                  }}
-                                  className={`text-[10px] sm:text-xs px-2 sm:px-3 py-1 rounded transition ${
-                                    isReady 
-                                      ? 'bg-yellow-500 text-white hover:bg-yellow-600' 
-                                      : 'bg-green-500 text-white hover:bg-green-600'
-                                  }`}
-                                >
-                                  <span className="truncate">{isReady ? '🟡 Sẵn sàng nhận nhiệm vụ' : '🟢 Nhận nhiệm vụ'}</span>
-                                </button>
-                              );
-                            })()
-                          )}
-                          {/* Chỉ hiển thị nút chỉ đường khi SOS chưa done để bảo vệ quyền riêng tư */}
-                          {sos.status !== 'done' && sos.status !== 'cancelled' && onShowRoute && profile?.lat && profile?.lon && sos.location && (
-                            <button
-                              onClick={() => {
-                                const fromLat = parseFloat(profile.lat);
-                                const fromLon = parseFloat(profile.lon);
-                                const toLat = parseFloat(sos.location.lat);
-                                const toLon = parseFloat(sos.location.lon);
-                                console.log('Showing route:', { 
-                                  from: { lat: fromLat, lon: fromLon }, 
-                                  to: { lat: toLat, lon: toLon },
-                                  sosId: sos.id
-                                });
-                                onShowRoute(fromLat, fromLon, toLat, toLon);
-                              }}
-                              className="text-[10px] sm:text-xs bg-blue-500 text-white px-2 sm:px-3 py-1 rounded hover:bg-blue-600 transition"
-                            >
-                              🗺️ Chỉ đường
-                            </button>
-                          )}
-                        </>
-                      )}
+                          );
+                        }
+
+                        const isReady = sos.readyStationIds?.includes(profile.id) || false;
+                        return (
+                          <button
+                            onClick={() => {
+                              if (onToggleReady) {
+                                onToggleReady(sos.id, !isReady);
+                              }
+                            }}
+                            className={`text-[10px] sm:text-xs px-2 sm:px-3 py-1 rounded transition ${
+                              isReady
+                                ? 'bg-yellow-500 text-white hover:bg-yellow-600'
+                                : 'bg-green-500 text-white hover:bg-green-600'
+                            }`}
+                          >
+                            <span className="truncate">
+                              {isReady ? '🟡 Sẵn sàng nhận nhiệm vụ' : '🟢 Nhận nhiệm vụ'}
+                            </span>
+                          </button>
+                        );
+                      })()}
+
+                      {/* Chỉ hiển thị nút chỉ đường khi SOS chưa done để bảo vệ quyền riêng tư */}
                       {sos.status === 'accepted' && sos.assignedStationId === profile.id && (
                         <>
                           <button
@@ -251,26 +326,6 @@ export default function StationSidePanel({
                           >
                             Bắt đầu đi
                           </button>
-                          {/* Chỉ hiển thị nút chỉ đường khi SOS chưa done để bảo vệ quyền riêng tư */}
-                          {sos.status !== 'done' && sos.status !== 'cancelled' && onShowRoute && profile?.lat && profile?.lon && sos.location && (
-                            <button
-                              onClick={() => {
-                                const fromLat = parseFloat(profile.lat);
-                                const fromLon = parseFloat(profile.lon);
-                                const toLat = parseFloat(sos.location.lat);
-                                const toLon = parseFloat(sos.location.lon);
-                                console.log('Showing route:', { 
-                                  from: { lat: fromLat, lon: fromLon }, 
-                                  to: { lat: toLat, lon: toLon },
-                                  sosId: sos.id
-                                });
-                                onShowRoute(fromLat, fromLon, toLat, toLon);
-                              }}
-                              className="text-[10px] sm:text-xs bg-purple-500 text-white px-2 sm:px-3 py-1 rounded hover:bg-purple-600 transition"
-                            >
-                              🗺️ Chỉ đường
-                            </button>
-                          )}
                           {/* Chỉ hiển thị nút Mở Google Maps khi SOS chưa done để bảo vệ quyền riêng tư */}
                           {sos.status !== 'done' && sos.status !== 'cancelled' && profile?.lat && profile?.lon && sos.location && (
                             <button
@@ -301,6 +356,8 @@ export default function StationSidePanel({
                           </button>
                         </>
                       )}
+
+                      {renderRouteButton()}
                       {sos.status === 'on_route' && sos.assignedStationId === profile.id && (
                         <>
                           <button
@@ -313,26 +370,6 @@ export default function StationSidePanel({
                           >
                             ✓ Hoàn thành nhiệm vụ
                           </button>
-                          {/* Chỉ hiển thị nút chỉ đường khi SOS chưa done để bảo vệ quyền riêng tư */}
-                          {sos.status !== 'done' && sos.status !== 'cancelled' && onShowRoute && profile?.lat && profile?.lon && sos.location && (
-                            <button
-                              onClick={() => {
-                                const fromLat = parseFloat(profile.lat);
-                                const fromLon = parseFloat(profile.lon);
-                                const toLat = parseFloat(sos.location.lat);
-                                const toLon = parseFloat(sos.location.lon);
-                                console.log('Showing route:', { 
-                                  from: { lat: fromLat, lon: fromLon }, 
-                                  to: { lat: toLat, lon: toLon },
-                                  sosId: sos.id
-                                });
-                                onShowRoute(fromLat, fromLon, toLat, toLon);
-                              }}
-                              className="text-[10px] sm:text-xs bg-purple-500 text-white px-2 sm:px-3 py-1 rounded hover:bg-purple-600 transition"
-                            >
-                              🗺️ Chỉ đường
-                            </button>
-                          )}
                           <button
                             onClick={() => {
                               if (window.confirm('Bạn có chắc chắn muốn hủy nhiệm vụ này?')) {
@@ -347,7 +384,8 @@ export default function StationSidePanel({
                       )}
                     </div>
                   </div>
-                ))
+                );
+                })
               )}
             </div>
           )}

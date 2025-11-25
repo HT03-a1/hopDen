@@ -4,6 +4,7 @@ import { readJson, writeJson } from '../services/dataService';
 import { SOS, Station } from '../types';
 
 const router = Router();
+const ASSIGNMENT_TIMEOUT_MS = 2 * 60 * 1000; // 2 phút
 
 // Calculate distance between two coordinates (Haversine formula)
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -122,6 +123,108 @@ function getIO(req: Request): Server {
   return req.app.get('io');
 }
 
+function setAssignmentDeadline(sosList: SOS[], index: number) {
+  const now = Date.now();
+  sosList[index].assignedAt = new Date(now).toISOString();
+  sosList[index].assignmentExpiresAt = new Date(now + ASSIGNMENT_TIMEOUT_MS).toISOString();
+}
+
+function clearAssignmentDeadline(sosList: SOS[], index: number) {
+  sosList[index].assignedAt = undefined;
+  sosList[index].assignmentExpiresAt = undefined;
+}
+
+function findNextStationForSOS(sos: SOS): Station | null {
+  if (!sos.location) {
+    return null;
+  }
+  const rejectedStations = sos.rejectedStationIds || [];
+  const readyStations = sos.readyStationIds || [];
+
+  let nextStation: Station | null = null;
+  if (readyStations.length > 0) {
+    nextStation = findNearestFromReadyStations(
+      sos.location.lat,
+      sos.location.lon,
+      sos.type,
+      readyStations,
+      rejectedStations
+    );
+  }
+
+  if (!nextStation) {
+    nextStation = findNearestStation(
+      sos.location.lat,
+      sos.location.lon,
+      sos.type,
+      rejectedStations
+    );
+  }
+
+  return nextStation;
+}
+
+export function enforceAssignmentTimeouts(io?: Server): SOS[] {
+  let sosList = readJson<SOS>('sos.json');
+  if (!Array.isArray(sosList)) {
+    sosList = [];
+  }
+
+  const now = Date.now();
+  let changed = false;
+  const updatedItems: SOS[] = [];
+
+  sosList.forEach((sos, index) => {
+    if (
+      sos &&
+      sos.status === 'pending' &&
+      sos.assignedStationId &&
+      sos.assignmentExpiresAt
+    ) {
+      const expiresAt = Date.parse(sos.assignmentExpiresAt);
+      if (!Number.isNaN(expiresAt) && expiresAt <= now) {
+        console.log(`[SOS] ⏳ Assignment for ${sos.id} expired for station ${sos.assignedStationId}`);
+
+        const rejectedStations = new Set(sos.rejectedStationIds || []);
+        rejectedStations.add(sos.assignedStationId);
+        sos.rejectedStationIds = Array.from(rejectedStations);
+
+        const nextStation = findNextStationForSOS(sos);
+        if (nextStation) {
+          console.log(`[SOS] 🔁 Reassigning ${sos.id} to station ${nextStation.id}`);
+          sos.assignedStationId = nextStation.id;
+          setAssignmentDeadline(sosList, index);
+          sos.updatedAt = new Date().toISOString();
+
+          if (sos.readyStationIds && sos.readyStationIds.length > 0) {
+            const filteredReadyStations = sos.readyStationIds.filter(id => id !== nextStation.id);
+            sos.readyStationIds = filteredReadyStations.length > 0 ? filteredReadyStations : undefined;
+          }
+        } else {
+          console.log(`[SOS] ⚠️ No available station to reassign ${sos.id}`);
+          sos.assignedStationId = undefined;
+          clearAssignmentDeadline(sosList, index);
+          sos.updatedAt = new Date().toISOString();
+        }
+
+        changed = true;
+        updatedItems.push(sosList[index]);
+      }
+    }
+  });
+
+  if (changed) {
+    writeJson('sos.json', sosList);
+    if (io) {
+      updatedItems.forEach(updatedSOS => {
+        io.emit('sos:update', updatedSOS);
+      });
+    }
+  }
+
+  return sosList;
+}
+
 // Create SOS
 router.post('/', (req: Request, res: Response) => {
   const { userId, deviceId, type, severity, location, note } = req.body;
@@ -151,7 +254,8 @@ router.post('/', (req: Request, res: Response) => {
   console.log(`SOS location validated: lat=${lat}, lon=${lon}`);
 
   try {
-    let sosList = readJson<SOS>('sos.json');
+    const io = getIO(req);
+    let sosList = enforceAssignmentTimeouts(io);
     
     // Đảm bảo sosList là array
     if (!Array.isArray(sosList)) {
@@ -194,6 +298,7 @@ router.post('/', (req: Request, res: Response) => {
         if (sosIndex !== -1) {
           sosList[sosIndex].assignedStationId = nearestStation.id;
           sosList[sosIndex].status = 'pending'; // Đặt pending để trạm có thể nhận
+          setAssignmentDeadline(sosList, sosIndex);
           sosList[sosIndex].updatedAt = new Date().toISOString();
           writeJson('sos.json', sosList);
           
@@ -202,6 +307,8 @@ router.post('/', (req: Request, res: Response) => {
           // Cập nhật newSOS để trả về
           newSOS.assignedStationId = nearestStation.id;
           newSOS.status = 'pending';
+          newSOS.assignedAt = sosList[sosIndex].assignedAt;
+          newSOS.assignmentExpiresAt = sosList[sosIndex].assignmentExpiresAt;
           newSOS.updatedAt = sosList[sosIndex].updatedAt;
         }
       } else {
@@ -382,6 +489,7 @@ router.patch('/:id/claim', (req: Request, res: Response) => {
       }
     }
     sosList[sosIndex].status = 'accepted';
+    clearAssignmentDeadline(sosList, sosIndex);
     sosList[sosIndex].updatedAt = new Date().toISOString();
 
     writeJson('sos.json', sosList);
@@ -488,6 +596,7 @@ router.patch('/:id/status', (req: Request, res: Response) => {
           // TỰ ĐỘNG CẬP NHẬT TRẠM MỚI NGAY LẬP TỨC
           sosList[sosIndex].assignedStationId = nextStation.id;
           sosList[sosIndex].status = 'pending'; // Đặt pending để trạm mới có thể nhận
+          setAssignmentDeadline(sosList, sosIndex);
           sosList[sosIndex].rejectedStationIds = rejectedStations; // Lưu danh sách trạm đã từ chối
           const currentReadyStations = sosList[sosIndex].readyStationIds;
           if (currentReadyStations && currentReadyStations.length > 0) {
@@ -510,6 +619,7 @@ router.patch('/:id/status', (req: Request, res: Response) => {
         } else {
           // Không tìm thấy trạm tiếp theo, đặt về pending (không có trạm nào)
           sosList[sosIndex].assignedStationId = undefined;
+          clearAssignmentDeadline(sosList, sosIndex);
           sosList[sosIndex].status = 'pending';
           sosList[sosIndex].rejectedStationIds = rejectedStations; // Vẫn lưu danh sách từ chối
           sosList[sosIndex].updatedAt = new Date().toISOString();
@@ -530,12 +640,16 @@ router.patch('/:id/status', (req: Request, res: Response) => {
         sosList[sosIndex].updatedAt = new Date().toISOString();
         // Xóa assignedStationId khi user hủy
         sosList[sosIndex].assignedStationId = undefined;
+        clearAssignmentDeadline(sosList, sosIndex);
       }
     }
     // Các trường hợp khác (update status bình thường)
     else {
       sosList[sosIndex].status = status as 'accepted' | 'on_route' | 'done' | 'cancelled';
       sosList[sosIndex].updatedAt = new Date().toISOString();
+      if (status !== 'pending') {
+        clearAssignmentDeadline(sosList, sosIndex);
+      }
     }
 
     // Chỉ ghi file nếu chưa ghi trong phần cancelled (để tránh ghi 2 lần)
@@ -691,12 +805,14 @@ router.patch('/:id/reject', (req: Request, res: Response) => {
     if (nextStation) {
       // Gán cho trạm tiếp theo
       sosList[sosIndex].assignedStationId = nextStation.id;
-      sosList[sosIndex].status = 'accepted';
+      sosList[sosIndex].status = 'pending';
+      setAssignmentDeadline(sosList, sosIndex);
       sosList[sosIndex].updatedAt = new Date().toISOString();
       console.log(`SOS ${id} reassigned to next nearest station: ${nextStation.id} (${nextStation.stationName})`);
     } else {
       // Không tìm thấy trạm tiếp theo, đặt về pending
       sosList[sosIndex].assignedStationId = undefined;
+      clearAssignmentDeadline(sosList, sosIndex);
       sosList[sosIndex].status = 'pending';
       console.log(`No next station found for SOS ${id}, status set to pending`);
     }

@@ -4,7 +4,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import authRoutes from './routes/auth';
 import mapRoutes from './routes/map';
-import sosRoutes from './routes/sos';
+import sosRoutes, { enforceAssignmentTimeouts } from './routes/sos';
 import stationRoutes from './routes/stations';
 import ratingRoutes from './routes/ratings';
 import telemetryRoutes from './routes/telemetry';
@@ -79,6 +79,15 @@ io.on('connection', (socket) => {
 
 // Make io available to routes
 app.set('io', io);
+
+const ASSIGNMENT_SWEEP_INTERVAL_MS = 15 * 1000;
+setInterval(() => {
+  try {
+    enforceAssignmentTimeouts(io);
+  } catch (error: any) {
+    console.error('[SOS] Assignment sweep error:', error.message);
+  }
+}, ASSIGNMENT_SWEEP_INTERVAL_MS);
 
 // Routes
 app.use('/api/auth', authRoutes);

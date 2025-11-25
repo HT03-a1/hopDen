@@ -55,6 +55,8 @@ export interface SOS {
   };
   status: 'pending' | 'accepted' | 'on_route' | 'done' | 'cancelled';
   assignedStationId?: string;
+  assignedAt?: string;
+  assignmentExpiresAt?: string;
   rejectedStationIds?: string[]; // Danh sách các trạm đã từ chối trong chu kỳ SOS này
   readyStationIds?: string[]; // Danh sách các trạm đã ấn "Sẵn sàng nhận nhiệm vụ"
   note?: string;
