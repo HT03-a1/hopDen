@@ -110,7 +110,34 @@ function MarkerWithBlink({
     >
       <Popup>
         <div className="p-2">
-          <h3 className="font-bold">{entity.name}</h3>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-bold">{entity.name}</h3>
+            {/* Trạng thái online/offline */}
+            {entity.type === 'user' && (() => {
+              // Ưu tiên dùng isOnline từ backend (entity.isOnline)
+              let isOnline = entity.isOnline;
+              if (isOnline === undefined) {
+                // Fallback: tính toán từ lastHardwareLocationAt
+                if (entity.lastHardwareLocationAt) {
+                  const lastHardwareTime = new Date(entity.lastHardwareLocationAt).getTime();
+                  const now = Date.now();
+                  const timeDiff = now - lastHardwareTime;
+                  const OFFLINE_THRESHOLD_MS = 2 * 60 * 1000; // 2 phút
+                  isOnline = timeDiff < OFFLINE_THRESHOLD_MS;
+                } else {
+                  isOnline = false;
+                }
+              }
+              return (
+                <div className="flex items-center space-x-1">
+                  <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
+                  <span className={`text-xs font-semibold ${isOnline ? 'text-green-600' : 'text-gray-500'}`}>
+                    {isOnline ? 'Online' : 'Offline'}
+                  </span>
+                </div>
+              );
+            })()}
+          </div>
           <p className="text-sm text-gray-600">{entity.type}</p>
           {hasActiveSOS && (
             <div className="mt-2 p-2 bg-red-100 border-2 border-red-500 rounded">

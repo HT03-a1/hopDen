@@ -6,13 +6,14 @@
     "password": "Quan2004",
     "phone": "0335587155",
     "address": "Lại Đà Đông Hội, Hà Nội",
-    "lat": 21.149616,
-    "lon": 105.8192259,
+    "lat": 0,
+    "lon": 0,
     "createdAt": "2025-11-13T16:44:19.873Z",
-    "lastLocationSource": "mobile",
-    "lastLocationUpdatedAt": "2025-11-15T07:44:45.060Z",
-    "lastHardwareLocationAt": "2025-11-14T17:30:25.515Z",
-    "lastMobileLocationAt": "2025-11-15T07:44:45.060Z"
+    "lastLocationSource": "hardware",
+    "lastLocationUpdatedAt": "2025-11-25T09:48:50.140Z",
+    "lastHardwareLocationAt": "2025-11-25T09:48:50.140Z",
+    "lastMobileLocationAt": "2025-11-15T07:44:45.060Z",
+    "isOnline": true
   },
   {
     "id": "U0002",
@@ -26,7 +27,8 @@
     "createdAt": "2025-11-14T15:46:40.205Z",
     "lastLocationSource": "mobile",
     "lastLocationUpdatedAt": "2025-11-14T15:47:29.162Z",
-    "lastMobileLocationAt": "2025-11-14T15:47:29.162Z"
+    "lastMobileLocationAt": "2025-11-14T15:47:29.162Z",
+    "isOnline": false
   },
   {
     "id": "U0003",
@@ -40,7 +42,8 @@
     "createdAt": "2025-11-14T15:47:21.479Z",
     "lastLocationSource": "mobile",
     "lastLocationUpdatedAt": "2025-11-14T15:51:16.780Z",
-    "lastMobileLocationAt": "2025-11-14T15:51:16.780Z"
+    "lastMobileLocationAt": "2025-11-14T15:51:16.780Z",
+    "isOnline": false
   },
   {
     "id": "U0004",
@@ -51,7 +54,8 @@
     "address": "",
     "lat": 10.7769,
     "lon": 106.7009,
-    "createdAt": "2025-11-14T16:44:30.783Z"
+    "createdAt": "2025-11-14T16:44:30.783Z",
+    "isOnline": false
   },
   {
     "id": "U0005",
@@ -62,7 +66,8 @@
     "address": "rề",
     "lat": 10.7769,
     "lon": 106.7009,
-    "createdAt": "2025-11-15T01:56:52.328Z"
+    "createdAt": "2025-11-15T01:56:52.328Z",
+    "isOnline": false
   },
   {
     "id": "U0006",
@@ -76,7 +81,8 @@
     "createdAt": "2025-11-15T07:47:28.315Z",
     "lastLocationSource": "mobile",
     "lastLocationUpdatedAt": "2025-11-15T07:50:05.088Z",
-    "lastMobileLocationAt": "2025-11-15T07:50:05.088Z"
+    "lastMobileLocationAt": "2025-11-15T07:50:05.088Z",
+    "isOnline": false
   },
   {
     "id": "U0007",
@@ -90,6 +96,7 @@
     "createdAt": "2025-11-15T07:54:17.631Z",
     "lastLocationSource": "mobile",
     "lastLocationUpdatedAt": "2025-11-15T07:57:00.218Z",
-    "lastMobileLocationAt": "2025-11-15T07:57:00.218Z"
+    "lastMobileLocationAt": "2025-11-15T07:57:00.218Z",
+    "isOnline": false
   }
 ]

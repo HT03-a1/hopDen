@@ -11,6 +11,7 @@ export interface User {
   lastLocationUpdatedAt?: string;
   lastHardwareLocationAt?: string;
   lastMobileLocationAt?: string;
+  isOnline?: boolean; // Trạng thái online/offline của thiết bị
   createdAt: string;
 }
 

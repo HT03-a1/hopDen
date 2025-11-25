@@ -54,43 +54,60 @@ export default function UserSidePanel({
   
   // Removed debug logging to reduce console noise
 
-  // Load thông tin trạm cho các SOS có assignedStationId
+  // Load thông tin trạm cho các SOS có assignedStationId - tối ưu hóa bằng cách load song song
   useEffect(() => {
     const loadStationInfo = async () => {
-      const newStationInfo: { [sosId: string]: any } = {};
+      // Lọc các SOS cần load thông tin trạm
+      const sosToLoad = sosList.filter(sos => 
+        sos.assignedStationId && 
+        sos.status !== 'done' && 
+        sos.status !== 'cancelled'
+      );
       
-      for (const sos of sosList) {
-        // Load thông tin trạm nếu có assignedStationId và SOS chưa done/cancelled
-        if (sos.assignedStationId && sos.status !== 'done' && sos.status !== 'cancelled') {
-          try {
-            const response = await apiClient.get(`/stations/${sos.assignedStationId}`);
-            newStationInfo[sos.id] = response.data;
-            
-            // Tính khoảng cách nếu có vị trí
-            if (profile?.lat && profile?.lon && response.data.lat && response.data.lon && sos.location) {
-              const distance = calculateDistance(
-                sos.location.lat,
-                sos.location.lon,
-                response.data.lat,
-                response.data.lon
-              );
-              newStationInfo[sos.id].distance = distance;
-            }
-          } catch (error: any) {
-            console.error(`Error loading station info for SOS ${sos.id}:`, error);
-            console.error(`Error details:`, error.response?.data || error.message);
-          }
-        }
+      if (sosToLoad.length === 0) {
+        setStationInfo({});
+        return;
       }
+      
+      // Load thông tin trạm song song để nhanh hơn
+      const stationPromises = sosToLoad.map(async (sos) => {
+        try {
+          const response = await apiClient.get(`/stations/${sos.assignedStationId}`);
+          const stationData = response.data;
+          
+          // Tính khoảng cách nếu có vị trí
+          if (profile?.lat && profile?.lon && stationData.lat && stationData.lon && sos.location) {
+            const distance = calculateDistance(
+              sos.location.lat,
+              sos.location.lon,
+              stationData.lat,
+              stationData.lon
+            );
+            stationData.distance = distance;
+          }
+          
+          return { sosId: sos.id, stationData };
+        } catch (error: any) {
+          console.error(`Error loading station info for SOS ${sos.id}:`, error);
+          return { sosId: sos.id, stationData: null };
+        }
+      });
+      
+      // Đợi tất cả các promise hoàn thành
+      const results = await Promise.all(stationPromises);
+      
+      // Tạo object mới với thông tin trạm
+      const newStationInfo: { [sosId: string]: any } = {};
+      results.forEach(({ sosId, stationData }) => {
+        if (stationData) {
+          newStationInfo[sosId] = stationData;
+        }
+      });
       
       setStationInfo(newStationInfo);
     };
 
-    if (sosList.length > 0) {
-      loadStationInfo();
-    } else {
-      setStationInfo({});
-    }
+    loadStationInfo();
   }, [sosList, profile]);
 
   // Blinking effect for SOS button when modal is open
@@ -162,6 +179,41 @@ export default function UserSidePanel({
                 <span className="bg-gradient-to-r from-yellow-100 to-yellow-50 border border-yellow-200 px-3 py-1 rounded-lg font-mono text-xs font-bold text-yellow-800">
                   {profile.id}
                 </span>
+              </div>
+              {/* Trạng thái thiết bị */}
+              <div className="flex items-center space-x-2 py-2">
+                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <span className="font-semibold text-gray-700">Trạng thái thiết bị:</span>
+                {(() => {
+                  // Ưu tiên dùng isOnline từ backend, nếu không có thì tính toán
+                  let isOnline = profile.isOnline;
+                  if (isOnline === undefined) {
+                    // Fallback: tính toán từ lastHardwareLocationAt
+                    if (profile.lastHardwareLocationAt) {
+                      const lastHardwareTime = new Date(profile.lastHardwareLocationAt).getTime();
+                      const now = Date.now();
+                      const timeDiff = now - lastHardwareTime;
+                      const OFFLINE_THRESHOLD_MS = 2 * 60 * 1000; // 2 phút
+                      isOnline = timeDiff < OFFLINE_THRESHOLD_MS;
+                    } else {
+                      isOnline = false;
+                    }
+                  }
+                  
+                  return (
+                    <div className="flex items-center space-x-2">
+                      <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
+                      <span className={`font-semibold ${isOnline ? 'text-green-600' : 'text-gray-500'}`}>
+                        {isOnline ? '🟢 Online' : '⚫ Offline'}
+                      </span>
+                      {!isOnline && !profile.lastHardwareLocationAt && (
+                        <span className="text-xs text-gray-500">(Chưa có phần cứng)</span>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
               <div className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-r text-xs text-blue-800">
                 <div className="flex items-start space-x-2">

@@ -8,5 +8,15 @@
     "lon": 105.8115,
     "status": "active",
     "lastUpdate": "2025-11-14T17:30:25.519Z"
+  },
+  {
+    "id": "DHW_U0001",
+    "userId": "U0001",
+    "deviceName": "Thiết bị DHW_U0001",
+    "vehicleType": "unknown",
+    "lat": 0,
+    "lon": 0,
+    "status": "active",
+    "lastUpdate": "2025-11-25T09:48:50.150Z"
   }
 ]

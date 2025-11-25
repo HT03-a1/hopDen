@@ -40,10 +40,7 @@ router.get('/entities', authenticate, (req: Request, res: Response) => {
               }
             });
           
-          // Log để debug
-          if (process.env.NODE_ENV !== 'production') {
-            console.log(`[MAP] Station ${req.userId} (${req.userType}): Active SOS user IDs:`, Array.from(activeSOSUserIds));
-          }
+          // Đã loại bỏ log để giảm spam
         }
       } catch (error: any) {
         console.error('Error loading SOS for privacy check:', error.message);
@@ -52,6 +49,7 @@ router.get('/entities', authenticate, (req: Request, res: Response) => {
 
     // Get users - CHỈ hiển thị user hiện tại nếu là user type
     // CHỈ hiển thị users có SOS active nếu là station type
+    const now = new Date();
     try {
       const users = readJson<User>('users.json');
       if (Array.isArray(users)) {
@@ -72,16 +70,10 @@ router.get('/entities', authenticate, (req: Request, res: Response) => {
                 return;
               }
               if (!activeSOSUserIds.has(user.id)) {
-                // Log để debug
-                if (process.env.NODE_ENV !== 'production') {
-                  console.log(`[MAP] Station ${req.userId}: Hiding user ${user.id} (no active SOS)`);
-                }
+                // Đã loại bỏ log để giảm spam
                 return; // Bỏ qua users không có SOS active
               }
-              // Log để debug
-              if (process.env.NODE_ENV !== 'production') {
-                console.log(`[MAP] Station ${req.userId}: Showing user ${user.id} (has active SOS)`);
-              }
+              // Đã loại bỏ log để giảm spam
             }
             
             // Nếu không có authentication HOẶC không phải user/station type, không hiển thị user (bảo vệ quyền riêng tư)
@@ -89,6 +81,20 @@ router.get('/entities', authenticate, (req: Request, res: Response) => {
               // Không có authentication, không hiển thị users (chỉ hiển thị stations, SOS, devices)
               return;
             }
+            
+            // Tính toán trạng thái online/offline
+            // Online nếu có lastHardwareLocationAt trong vòng 2 phút gần đây
+            // Nếu không có lastHardwareLocationAt → Offline (chưa có phần cứng)
+            let isOnline = false;
+            if (user.lastHardwareLocationAt) {
+              const lastHardwareTime = Date.parse(user.lastHardwareLocationAt);
+              if (!Number.isNaN(lastHardwareTime)) {
+                const timeDiff = now.getTime() - lastHardwareTime;
+                const OFFLINE_THRESHOLD_MS = 2 * 60 * 1000; // 2 phút
+                isOnline = timeDiff < OFFLINE_THRESHOLD_MS;
+              }
+            }
+            // Nếu không có lastHardwareLocationAt → isOnline = false (mặc định)
             
             entities.push({
               type: 'user',
@@ -98,7 +104,9 @@ router.get('/entities', authenticate, (req: Request, res: Response) => {
               lon: user.lon,
               email: user.email,
               phone: user.phone,
-              address: user.address
+              address: user.address,
+              isOnline: isOnline,
+              lastHardwareLocationAt: user.lastHardwareLocationAt
             });
           }
         });
@@ -158,12 +166,7 @@ router.get('/entities', authenticate, (req: Request, res: Response) => {
       }
       
       if (Array.isArray(sosList)) {
-        // Log tổng số SOS để debug
-        if (process.env.NODE_ENV !== 'production') {
-          console.log(`[MAP] Total SOS in system: ${sosList.length}`);
-          const activeSOS = sosList.filter(sos => sos && sos.status && sos.status !== 'done' && sos.status !== 'cancelled' && sos.location);
-          console.log(`[MAP] Active SOS (not done/cancelled, has location): ${activeSOS.length}`);
-        }
+        // Đã loại bỏ log tổng số SOS để giảm spam
         
         sosList
           .filter(sos => {
@@ -171,36 +174,19 @@ router.get('/entities', authenticate, (req: Request, res: Response) => {
             const isActive = sos && sos.status && sos.status !== 'done' && sos.status !== 'cancelled';
             const hasLocation = sos.location && sos.location.lat && sos.location.lon;
             
-            // Log để debug filter
-            if (process.env.NODE_ENV !== 'production' && sos) {
-              if (!isActive) {
-                console.log(`[MAP] Filtering out SOS ${sos.id}: status=${sos.status} (not active)`);
-              } else if (!hasLocation) {
-                console.log(`[MAP] Filtering out SOS ${sos.id}: no location`);
-              }
-            }
+            // Đã loại bỏ log "Filtering out SOS" để giảm spam log
             
             return isActive && hasLocation;
           })
           .forEach(sos => {
             if (sos.location && sos.location.lat && sos.location.lon) {
-              // Log để debug
-              if (process.env.NODE_ENV !== 'production') {
-                console.log(`[MAP] Processing SOS ${sos.id}: userId=${sos.userId}, type=${sos.type}, status=${sos.status}, req.userId=${req.userId}, req.userType=${req.userType}`);
-              }
+              // Đã loại bỏ log "Processing SOS" để giảm spam
               
               // Nếu là user type, CHỈ hiển thị SOS của chính user đó
               if (req.userType === 'user' && req.userId) {
                 if (sos.userId !== req.userId) {
-                  // Bỏ qua SOS của user khác
-                  if (process.env.NODE_ENV !== 'production') {
-                    console.log(`[MAP] User ${req.userId}: Hiding SOS ${sos.id} (belongs to user ${sos.userId})`);
-                  }
-                  return; // Bỏ qua SOS của user khác
-                }
-                // Log khi hiển thị SOS của chính user - QUAN TRỌNG: Phải hiển thị SOS của chính mình
-                if (process.env.NODE_ENV !== 'production') {
-                  console.log(`[MAP] ✅ User ${req.userId}: Showing SOS ${sos.id} (type ${sos.type}, status ${sos.status}, location=(${sos.location.lat}, ${sos.location.lon}))`);
+                  // Bỏ qua SOS của user khác (không log để giảm spam)
+                  return;
                 }
                 // Tiếp tục để thêm SOS vào entities (KHÔNG return ở đây)
               }
@@ -212,36 +198,21 @@ router.get('/entities', authenticate, (req: Request, res: Response) => {
                   : ['breakdown', 'other'];
                 
                 if (!allowedTypes.includes(sos.type)) {
-                  // Bỏ qua SOS không phù hợp với loại trạm
-                  if (process.env.NODE_ENV !== 'production') {
-                    console.log(`[MAP] Station ${req.userId} (${req.userType}): Hiding SOS ${sos.id} (type ${sos.type} not allowed)`);
-                  }
+                  // Bỏ qua SOS không phù hợp với loại trạm (không log để giảm spam)
                   return;
-                }
-                // Log khi hiển thị SOS cho trạm
-                if (process.env.NODE_ENV !== 'production') {
-                  console.log(`[MAP] Station ${req.userId} (${req.userType}): Showing SOS ${sos.id} (type ${sos.type}, status ${sos.status})`);
                 }
               }
               
               // Nếu không có authentication, không hiển thị SOS (bảo vệ quyền riêng tư)
-              // QUAN TRỌNG: Chỉ check này nếu KHÔNG phải user type và KHÔNG phải station type
-              // Vì nếu đã vào block user type hoặc station type ở trên thì đã có authentication
-              // Nếu req.userType là undefined/null, nghĩa là không có authentication
               if (!req.userType) {
-                if (process.env.NODE_ENV !== 'production') {
-                  console.log(`[MAP] No authentication: Hiding SOS ${sos.id}`);
-                }
-                return; // Không có authentication, không hiển thị SOS
+                // Không log để giảm spam
+                return;
               }
               
               // Lấy thông tin user từ userMap
               const user = userMap.get(sos.userId);
               
-              // Log chi tiết khi thêm SOS vào entities
-              if (process.env.NODE_ENV !== 'production') {
-                console.log(`[MAP] ✅ Adding SOS entity: id=${sos.id}, userId=${sos.userId}, type=${sos.type}, status=${sos.status}, location=(${sos.location.lat}, ${sos.location.lon})`);
-              }
+              // Đã loại bỏ log "Adding SOS entity" để giảm spam
               
               entities.push({
                 type: 'sos',
@@ -276,11 +247,8 @@ router.get('/entities', authenticate, (req: Request, res: Response) => {
           if (device && device.id && device.lat && device.lon) {
             // Nếu device có userId, LUÔN bỏ qua device marker (user sẽ có marker riêng)
             if (device.userId) {
-              // Device thuộc về user, không hiển thị device marker
-              if (process.env.NODE_ENV !== 'production') {
-                console.log(`[MAP] Skipping device ${device.id} - belongs to user ${device.userId}, user marker will be shown instead`);
-              }
-              return;
+            // Device thuộc về user, không hiển thị device marker (không log để giảm spam)
+            return;
             }
             
             // Chỉ hiển thị device nếu KHÔNG có userId (device độc lập, không thuộc về user nào)
@@ -304,16 +272,7 @@ router.get('/entities', authenticate, (req: Request, res: Response) => {
       console.error('Error loading devices:', error.message);
     }
 
-    // Log tổng số entities trước khi trả về
-    if (process.env.NODE_ENV !== 'production') {
-      const sosEntities = entities.filter(e => e.type === 'sos');
-      const userEntities = entities.filter(e => e.type === 'user');
-      const deviceEntities = entities.filter(e => e.type === 'device');
-      console.log(`[MAP] Returning entities: total=${entities.length}, sos=${sosEntities.length}, user=${userEntities.length}, device=${deviceEntities.length}`);
-      if (sosEntities.length > 0) {
-        console.log(`[MAP] SOS entities being returned:`, sosEntities.map(e => ({ id: e.id, userId: e.userId, type: e.sosType, lat: e.lat, lon: e.lon })));
-      }
-    }
+    // Đã loại bỏ log tổng số entities để giảm spam (chỉ log khi có lỗi)
     
     res.json(entities);
   } catch (error: any) {

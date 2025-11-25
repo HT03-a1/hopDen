@@ -197,8 +197,21 @@ export default function MapPage() {
       await loadMapData();
     });
 
-    newSocket.on('sos:update', async () => {
+    newSocket.on('sos:update', async (sosData) => {
       // Tự động reload SOS list và map data khi có update
+      if (import.meta.env.DEV) {
+        console.log('[MapPage] 📡 Received sos:update event:', sosData);
+      }
+      await loadSOSList();
+      loadMapData();
+    });
+
+    // Lắng nghe event riêng cho claim để đảm bảo cập nhật ngay lập tức
+    newSocket.on('sos:claimed', async (sosData) => {
+      if (import.meta.env.DEV) {
+        console.log('[MapPage] 📡 Received sos:claimed event:', sosData);
+      }
+      // Reload ngay để cập nhật thông tin trạm cho user
       await loadSOSList();
       loadMapData();
     });
@@ -230,7 +243,9 @@ export default function MapPage() {
           lat: data.lat, 
           lon: data.lon,
           lastLocationSource: data.lastLocationSource,
-          lastLocationUpdatedAt: data.lastLocationUpdatedAt
+          lastLocationUpdatedAt: data.lastLocationUpdatedAt,
+          lastHardwareLocationAt: data.lastHardwareLocationAt,
+          isOnline: data.isOnline
         });
         
         // Cập nhật userCurrentLocation để marker re-render
@@ -596,6 +611,28 @@ export default function MapPage() {
                     </svg>
                     <span className="font-semibold text-xs md:text-sm truncate max-w-[100px] md:max-w-none">{profile.name}</span>
                     <span className="text-slate-200 text-xs font-mono bg-white/10 px-1.5 md:px-2 py-0.5 rounded hidden lg:inline">ID: {profile.id}</span>
+                    {/* Trạng thái thiết bị */}
+                    {(() => {
+                      // Ưu tiên dùng isOnline từ backend
+                      let isOnline = profile.isOnline;
+                      if (isOnline === undefined && profile.lastHardwareLocationAt) {
+                        const lastHardwareTime = new Date(profile.lastHardwareLocationAt).getTime();
+                        const now = Date.now();
+                        const timeDiff = now - lastHardwareTime;
+                        const OFFLINE_THRESHOLD_MS = 2 * 60 * 1000; // 2 phút
+                        isOnline = timeDiff < OFFLINE_THRESHOLD_MS;
+                      } else if (isOnline === undefined) {
+                        isOnline = false;
+                      }
+                      return (
+                        <div className="flex items-center space-x-1">
+                          <div className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-green-400 animate-pulse' : 'bg-gray-400'}`}></div>
+                          <span className="text-[10px] text-slate-300 hidden xl:inline">
+                            {isOnline ? 'Online' : 'Offline'}
+                          </span>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </>
               ) : (
@@ -945,6 +982,14 @@ export default function MapPage() {
                 } catch (error: any) {
                   console.error('Error claiming SOS:', error);
                   const errorMessage = error.response?.data?.error || error.message || 'Không thể nhận nhiệm vụ';
+                  
+                  // Nếu SOS đã được claim hoặc xử lý, reload lại danh sách để cập nhật trạng thái
+                  if (error.response?.status === 400 && errorMessage.includes('đã được nhận')) {
+                    console.log('SOS đã được claim, reloading SOS list...');
+                    await loadSOSList();
+                    await loadMapData();
+                  }
+                  
                   alert(`Không thể nhận nhiệm vụ: ${errorMessage}`);
                 }
               }}

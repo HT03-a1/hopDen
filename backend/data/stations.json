@@ -590,5 +590,53 @@
     "ratingAvg": 0,
     "ratingCount": 0,
     "createdAt": "2025-11-15T07:45:31.844Z"
+  },
+  {
+    "id": "S0038",
+    "stationName": "Trạm Cổ Loa",
+    "type": "medical",
+    "email": "hehe4@gmail.com",
+    "password": "heheh@@",
+    "phone": "0987654444",
+    "address": "Cổ Loa",
+    "lat": 21.0926102,
+    "lon": 105.869409,
+    "openHours": "24/7",
+    "description": "",
+    "ratingAvg": 0,
+    "ratingCount": 0,
+    "createdAt": "2025-11-25T09:27:58.301Z"
+  },
+  {
+    "id": "S0039",
+    "stationName": "Tram Cuu ho cloa",
+    "type": "medical",
+    "email": "hhhhhh@gmail.com",
+    "password": "ddddd",
+    "phone": "0987656789",
+    "address": "cloa ",
+    "lat": 20.096534,
+    "lon": 105.8681944,
+    "openHours": "24/7",
+    "description": "",
+    "ratingAvg": 0,
+    "ratingCount": 0,
+    "createdAt": "2025-11-25T09:30:44.072Z"
+  },
+  {
+    "id": "S0040",
+    "stationName": "cloa",
+    "type": "medical",
+    "email": "hhhhh@gmail.com",
+    "password": "ddddd",
+    "phone": "0987655678",
+    "address": "cloa",
+    "lat": 21.09651,
+    "lon": 105.8681944,
+    "openHours": "24/7",
+    "description": "",
+    "ratingAvg": 0,
+    "ratingCount": 0,
+    "createdAt": "2025-11-25T09:32:00.600Z"
   }
 ]

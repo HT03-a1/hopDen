@@ -75,34 +75,28 @@ function findNearestStation(sosLat: number, sosLon: number, sosType: string, exc
     const stations = readJson<Station>('stations.json');
     const requiredType = getRequiredStationType(sosType);
     
-    // Xác định loại trạm cần tìm dựa trên loại SOS
-    let filteredStations: Station[] = [];
-    
-    if (requiredType) {
-      filteredStations = stations.filter(s => s.type === requiredType);
-    } else {
-      filteredStations = stations;
-    }
-    
-    // Loại trừ các trạm đã từ chối
-    if (excludeStationIds.length > 0) {
-      filteredStations = filteredStations.filter(s => !excludeStationIds.includes(s.id));
-    }
-    
-    if (filteredStations.length === 0) {
-      console.log('No stations found for SOS type:', sosType, excludeStationIds.length > 0 ? `(excluded ${excludeStationIds.length} stations)` : '');
-      return null;
-    }
-    
-    // Tính khoảng cách và tìm trạm gần nhất
+    // Tối ưu: Lọc và tính khoảng cách trong một lần duyệt
+    const excludeSet = new Set(excludeStationIds);
     let nearestStation: Station | null = null;
     let minDistance = Infinity;
     
-    for (const station of filteredStations) {
+    for (const station of stations) {
+      // Kiểm tra loại trạm
+      if (requiredType && station.type !== requiredType) {
+        continue;
+      }
+      
+      // Loại trừ các trạm đã từ chối
+      if (excludeSet.has(station.id)) {
+        continue;
+      }
+      
+      // Kiểm tra tọa độ hợp lệ
       if (!station.lat || !station.lon || isNaN(station.lat) || isNaN(station.lon)) {
         continue;
       }
       
+      // Tính khoảng cách và so sánh ngay
       const distance = calculateDistance(sosLat, sosLon, station.lat, station.lon);
       if (distance < minDistance) {
         minDistance = distance;
@@ -112,6 +106,8 @@ function findNearestStation(sosLat: number, sosLon: number, sosType: string, exc
     
     if (nearestStation) {
       console.log(`Found nearest station: ${nearestStation.stationName || 'Unknown'} (${nearestStation.id}), distance: ${minDistance.toFixed(2)} km`);
+    } else {
+      console.log('No stations found for SOS type:', sosType, excludeStationIds.length > 0 ? `(excluded ${excludeStationIds.length} stations)` : '');
     }
     
     return nearestStation;
@@ -266,6 +262,44 @@ router.get('/', (req: Request, res: Response) => {
   }
 });
 
+// Check SOS status for hardware (để phần cứng kiểm tra SOS có bị hủy không)
+router.get('/check/:userId', (req: Request, res: Response) => {
+  const { userId } = req.params;
+
+  try {
+    const sosList = readJson<SOS>('sos.json');
+    
+    // Tìm SOS active (pending, accepted, on_route) của user
+    const activeSOS = sosList.find(sos => 
+      sos && 
+      sos.userId === userId &&
+      sos.status !== 'done' &&
+      sos.status !== 'cancelled' &&
+      sos.type === 'accident' // Chỉ kiểm tra SOS tai nạn
+    );
+    
+    if (activeSOS) {
+      // Có SOS active
+      return res.json({
+        hasActiveSOS: true,
+        sosId: activeSOS.id,
+        status: activeSOS.status,
+        severity: activeSOS.severity,
+        createdAt: activeSOS.createdAt
+      });
+    } else {
+      // Không có SOS active
+      return res.json({
+        hasActiveSOS: false,
+        message: 'No active SOS found'
+      });
+    }
+  } catch (error) {
+    console.error('Check SOS status error:', error);
+    res.status(500).json({ error: 'Lỗi server' });
+  }
+});
+
 // Get SOS by ID
 router.get('/:id', (req: Request, res: Response) => {
   const { id } = req.params;
@@ -353,11 +387,16 @@ router.patch('/:id/claim', (req: Request, res: Response) => {
     writeJson('sos.json', sosList);
     console.log('SOS claimed successfully:', sosList[sosIndex]);
 
-    // Broadcast update
+    // Broadcast update - đảm bảo tất cả clients nhận được cập nhật
     const io = getIO(req);
-    io.emit('sos:update', sosList[sosIndex]);
+    const updatedSOS = sosList[sosIndex];
+    io.emit('sos:update', updatedSOS);
+    // Broadcast riêng cho user để đảm bảo họ nhận được thông tin trạm ngay
+    io.to(`user:${updatedSOS.userId}`).emit('sos:update', updatedSOS);
+    // Broadcast cho tất cả trạm
+    io.emit('sos:claimed', updatedSOS);
 
-    res.json(sosList[sosIndex]);
+    res.json(updatedSOS);
   } catch (error: any) {
     console.error('Claim SOS error:', error);
     console.error('Error stack:', error.stack);

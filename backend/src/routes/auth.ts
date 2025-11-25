@@ -24,6 +24,18 @@ router.post('/login', (req: Request, res: Response) => {
       // Mock token
       const token = `mock_token_${user.id}_${Date.now()}`;
       
+      // Tính toán isOnline dựa trên lastHardwareLocationAt
+      let isOnline = false;
+      if (user.lastHardwareLocationAt) {
+        const lastHardwareTime = Date.parse(user.lastHardwareLocationAt);
+        if (!Number.isNaN(lastHardwareTime)) {
+          const now = new Date();
+          const timeDiff = now.getTime() - lastHardwareTime;
+          const OFFLINE_THRESHOLD_MS = 2 * 60 * 1000; // 2 phút
+          isOnline = timeDiff < OFFLINE_THRESHOLD_MS;
+        }
+      }
+      
       return res.json({
         token,
         profile: {
@@ -34,7 +46,9 @@ router.post('/login', (req: Request, res: Response) => {
           address: user.address,
           lat: user.lat,
           lon: user.lon,
-          type: 'user'
+          type: 'user',
+          lastHardwareLocationAt: user.lastHardwareLocationAt,
+          isOnline: isOnline
         }
       });
     } else if (role === 'medical_station' || role === 'rescue_station') {

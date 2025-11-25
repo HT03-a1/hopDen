@@ -16,6 +16,8 @@ interface UserProfile {
   ratingCount?: number;
   lastLocationSource?: 'hardware' | 'mobile';
   lastLocationUpdatedAt?: string;
+  lastHardwareLocationAt?: string;
+  isOnline?: boolean;
 }
 
 interface AuthState {
