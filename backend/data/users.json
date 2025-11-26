@@ -6,14 +6,14 @@
     "password": "Quan2004",
     "phone": "0335587155",
     "address": "Lại Đà Đông Hội, Hà Nội",
-    "lat": 21.1001382,
-    "lon": 105.8625921,
+    "lat": 21.0787088,
+    "lon": 105.8656043,
     "createdAt": "2025-11-13T16:44:19.873Z",
     "lastLocationSource": "mobile",
-    "lastLocationUpdatedAt": "2025-11-25T14:59:49.077Z",
-    "lastHardwareLocationAt": "2025-11-25T09:48:50.140Z",
-    "lastMobileLocationAt": "2025-11-25T14:59:49.077Z",
-    "isOnline": true
+    "lastLocationUpdatedAt": "2025-11-26T07:16:07.083Z",
+    "lastHardwareLocationAt": "2025-11-26T06:48:49.103Z",
+    "lastMobileLocationAt": "2025-11-26T07:16:07.083Z",
+    "isOnline": false
   },
   {
     "id": "U0002",
@@ -37,13 +37,14 @@
     "password": "heheh@@",
     "phone": "0987654321",
     "address": "",
-    "lat": 21.08042,
-    "lon": 105.86816,
+    "lat": 21.096901,
+    "lon": 105.868172,
     "createdAt": "2025-11-14T15:47:21.479Z",
-    "lastLocationSource": "mobile",
-    "lastLocationUpdatedAt": "2025-11-14T15:51:16.780Z",
+    "lastLocationSource": "hardware",
+    "lastLocationUpdatedAt": "2025-11-26T10:37:27.156Z",
     "lastMobileLocationAt": "2025-11-14T15:51:16.780Z",
-    "isOnline": false
+    "isOnline": true,
+    "lastHardwareLocationAt": "2025-11-26T10:37:27.156Z"
   },
   {
     "id": "U0004",
@@ -97,6 +98,21 @@
     "lastLocationSource": "mobile",
     "lastLocationUpdatedAt": "2025-11-15T07:57:00.218Z",
     "lastMobileLocationAt": "2025-11-15T07:57:00.218Z",
+    "isOnline": false
+  },
+  {
+    "id": "U0008",
+    "name": "Tuấn Dũng",
+    "email": "heheee@gmail.com",
+    "password": "12345678",
+    "phone": "0865168547",
+    "address": "",
+    "lat": 21.096535,
+    "lon": 105.868065,
+    "createdAt": "2025-11-26T07:18:05.817Z",
+    "lastLocationSource": "hardware",
+    "lastLocationUpdatedAt": "2025-11-26T10:04:39.232Z",
+    "lastHardwareLocationAt": "2025-11-26T10:04:39.232Z",
     "isOnline": false
   }
 ]

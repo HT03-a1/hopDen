@@ -17,6 +17,26 @@
     "lat": 0,
     "lon": 0,
     "status": "active",
-    "lastUpdate": "2025-11-25T09:48:50.150Z"
+    "lastUpdate": "2025-11-26T06:48:49.109Z"
+  },
+  {
+    "id": "DHW_U0003",
+    "userId": "U0003",
+    "deviceName": "Thiết bị DHW_U0003",
+    "vehicleType": "unknown",
+    "lat": 21.096901,
+    "lon": 105.868172,
+    "status": "active",
+    "lastUpdate": "2025-11-26T10:37:27.164Z"
+  },
+  {
+    "id": "DHW_U0008",
+    "userId": "U0008",
+    "deviceName": "Thiết bị DHW_U0008",
+    "vehicleType": "unknown",
+    "lat": 21.096535,
+    "lon": 105.868065,
+    "status": "active",
+    "lastUpdate": "2025-11-26T10:04:39.238Z"
   }
 ]

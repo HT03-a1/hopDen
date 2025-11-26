@@ -187,9 +187,18 @@ export default function MapPage() {
 
         const filterByType = (sos: any) => allowedTypes.includes(sos.type);
 
+        // QUAN TRỌNG: Lấy TẤT CẢ SOS pending (để tất cả trạm đều thấy)
+        // Trạm được gán sẽ có quyền tự quyết, trạm khác chỉ có quyền "Sẵn sàng hỗ trợ"
         const pendingSOS = (pendingResponse.data || []).filter(filterByType);
+        
+        // Lấy SOS đã được trạm nhận (accepted/on_route)
         const assignedSOS = (assignedResponse.data || [])
-          .filter((sos: any) => sos.status === 'accepted' || sos.status === 'on_route')
+          .filter((sos: any) => {
+            // CHỈ lấy SOS có status accepted hoặc on_route (KHÔNG lấy cancelled/done)
+            return (sos.status === 'accepted' || sos.status === 'on_route') &&
+                   sos.status !== 'cancelled' &&
+                   sos.status !== 'done';
+          })
           .filter(filterByType);
         
         const now = new Date();
@@ -197,7 +206,8 @@ export default function MapPage() {
         
         const sosMap = new Map();
         [...pendingSOS, ...assignedSOS].forEach((sos: any) => {
-          if (sos.status !== 'done' && sos.status !== 'cancelled') {
+          // CHỈ hiển thị SOS active (không phải done/cancelled)
+          if (sos.status && sos.status !== 'done' && sos.status !== 'cancelled') {
             const sosCreatedAt = new Date(sos.createdAt);
             if (sosCreatedAt >= oneDayAgo) {
               sosMap.set(sos.id, sos);
@@ -238,42 +248,66 @@ export default function MapPage() {
 
   // Setup WebSocket
   useEffect(() => {
-    // Nếu có VITE_WS_URL thì dùng, nếu không thì tự động tạo từ VITE_API_URL hoặc localhost
-    let wsUrl = import.meta.env.VITE_WS_URL;
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-    
-    if (import.meta.env.DEV) {
-      console.log('[MapPage] 🔍 VITE_WS_URL:', import.meta.env.VITE_WS_URL);
-      console.log('[MapPage] 🔍 VITE_API_URL:', apiUrl);
-    }
-    
-    if (!wsUrl) {
+    // Tự động detect WebSocket URL dựa trên environment
+    function getWebSocketUrl(): string {
+      // Tự động detect từ hostname TRƯỚC (ưu tiên cao nhất)
+      if (typeof window !== 'undefined') {
+        const hostname = window.location.hostname;
+        
+        // Production domain - LUÔN dùng api.hopdenthongminh.cloud
+        if (hostname === 'hopdenthongminh.cloud' || hostname === 'www.hopdenthongminh.cloud') {
+          console.log('[MapPage] 🌐 Production detected, using wss://api.hopdenthongminh.cloud');
+          return 'wss://api.hopdenthongminh.cloud';
+        }
+        
+        // Local development
+        if (hostname === 'localhost' || hostname === '127.0.0.1') {
+          console.log('[MapPage] 🏠 Local development detected, using ws://localhost:3000');
+          return 'ws://localhost:3000';
+        }
+      }
+      
+      // Nếu có VITE_WS_URL từ env, dùng nó (nhưng vẫn kiểm tra và sửa nếu cần)
+      if (import.meta.env.VITE_WS_URL) {
+        let wsUrl = import.meta.env.VITE_WS_URL;
+        // Loại bỏ port 5173 nếu có (Vite dev server port)
+        wsUrl = wsUrl.replace(':5173', '');
+        // Đảm bảo nó trỏ đến api.hopdenthongminh.cloud nếu ở production
+        if (wsUrl.includes('hopdenthongminh.cloud') && !wsUrl.includes('api.hopdenthongminh.cloud')) {
+          wsUrl = wsUrl.replace('hopdenthongminh.cloud', 'api.hopdenthongminh.cloud');
+        }
+        console.log('[MapPage] 🔧 Using VITE_WS_URL:', wsUrl);
+        return wsUrl;
+      }
+      
+      // Fallback - dùng từ VITE_API_URL nếu có
+      let apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+      
       // Chuyển từ API URL sang WebSocket URL
-      // Ví dụ: https://api.hopdenthongminh.cloud/api -> wss://api.hopdenthongminh.cloud
-      // Hoặc: http://localhost:3000/api -> http://localhost:3000
-      wsUrl = apiUrl.replace('/api', '').replace('https://', 'wss://').replace('http://', 'ws://');
-      if (import.meta.env.DEV) {
-        console.log('[MapPage] 🔍 Auto-generated WebSocket URL from API URL:', wsUrl);
+      let wsUrl = apiUrl.replace('/api', '').replace('https://', 'wss://').replace('http://', 'ws://');
+      
+      // Loại bỏ port 5173 nếu có
+      wsUrl = wsUrl.replace(':5173', '');
+      
+      // Đảm bảo WebSocket URL trỏ đến backend domain (api.hopdenthongminh.cloud), không phải frontend
+      if (wsUrl.includes('hopdenthongminh.cloud') && !wsUrl.includes('api.hopdenthongminh.cloud')) {
+        wsUrl = wsUrl.replace('hopdenthongminh.cloud', 'api.hopdenthongminh.cloud');
       }
-    } else {
-      if (import.meta.env.DEV) {
-        console.log('[MapPage] 🔍 Using VITE_WS_URL from .env:', wsUrl);
-      }
+      
+      console.log('[MapPage] 🔧 Fallback WebSocket URL:', wsUrl);
+      return wsUrl;
     }
     
-    // Đảm bảo WebSocket URL trỏ đến backend domain (api.hopdenthongminh.cloud), không phải frontend
+    const wsUrl = getWebSocketUrl();
+    
+    // Log luôn để debug (không chỉ DEV)
+    console.log('[MapPage] 🔍 WebSocket URL:', wsUrl);
+    console.log('[MapPage] 🔍 Current hostname:', typeof window !== 'undefined' ? window.location.hostname : 'N/A');
+    
+    // Kiểm tra và cảnh báo nếu URL không đúng
     if (wsUrl.includes('hopdenthongminh.cloud') && !wsUrl.includes('api.hopdenthongminh.cloud')) {
-      if (import.meta.env.DEV) {
-        console.warn('[MapPage] ⚠️ WebSocket URL trỏ đến frontend domain! Sửa thành api.hopdenthongminh.cloud');
-      }
-      wsUrl = wsUrl.replace('hopdenthongminh.cloud', 'api.hopdenthongminh.cloud');
-      if (import.meta.env.DEV) {
-        console.log('[MapPage] ✅ Đã sửa WebSocket URL thành:', wsUrl);
-      }
-    }
-    
-    if (import.meta.env.DEV) {
-      console.log('[MapPage] 🔍 Connecting to WebSocket:', wsUrl);
+      console.error('[MapPage] ❌ WebSocket URL không đúng! Phải là api.hopdenthongminh.cloud');
+      console.error('[MapPage] ❌ URL hiện tại:', wsUrl);
     }
     
     const newSocket = io(wsUrl, {
@@ -299,35 +333,131 @@ export default function MapPage() {
 
     newSocket.on('connect_error', (error) => {
       console.error('[MapPage] ❌ WebSocket connection error:', error);
+      console.error('[MapPage] ❌ Error message:', error.message);
+      console.error('[MapPage] ❌ Error type:', error.type);
+      console.error('[MapPage] ❌ WebSocket URL đang dùng:', wsUrl);
+      console.error('[MapPage] ❌ Hostname hiện tại:', typeof window !== 'undefined' ? window.location.hostname : 'N/A');
+      
+      // Nếu là lỗi server error, có thể do CORS hoặc backend không chạy
+      if (error.message.includes('server error') || error.message.includes('Server Error')) {
+        console.error('[MapPage] ⚠️ Có thể do:');
+        console.error('[MapPage]   1. Backend server không chạy');
+        console.error('[MapPage]   2. CORS chưa được cấu hình đúng');
+        console.error('[MapPage]   3. Cloudflare Tunnel có vấn đề');
+        console.error('[MapPage]   4. WebSocket URL không đúng (phải là api.hopdenthongminh.cloud)');
+      }
     });
 
     newSocket.on('sos:new', async (sosData) => {
-      if (import.meta.env.DEV) {
-        console.log('[MapPage] 📡 Received sos:new event:', sosData);
-      }
+      console.log('[MapPage] 📡 Received sos:new event:', sosData);
+      
+      // Cập nhật state ngay lập tức
+      setSosList(prev => {
+        // Kiểm tra xem SOS đã tồn tại chưa
+        const exists = prev.find(sos => sos.id === sosData.id);
+        if (exists) {
+          // Nếu đã tồn tại, cập nhật
+          return prev.map(sos => sos.id === sosData.id ? sosData : sos);
+        }
+        // Nếu chưa tồn tại, thêm mới
+        return [...prev, sosData];
+      });
+      
+      // Reload để đảm bảo đồng bộ
       await refreshRealtimeData();
     });
 
     newSocket.on('sos:update', async (sosData) => {
-      // Tự động reload SOS list và map data khi có update
-      if (import.meta.env.DEV) {
-        console.log('[MapPage] 📡 Received sos:update event:', sosData);
+      console.log('[MapPage] 📡 Received sos:update event:', sosData);
+      
+      // Cập nhật state ngay lập tức - QUAN TRỌNG để UI cập nhật ngay
+      setSosList(prev => {
+        const index = prev.findIndex(sos => sos.id === sosData.id);
+        
+        // Nếu SOS bị cancelled hoặc done, loại bỏ khỏi list (cho trạm)
+        if (sosData.status === 'cancelled' || sosData.status === 'done') {
+          if (index !== -1) {
+            // Loại bỏ SOS đã cancelled/done
+            const updated = prev.filter(sos => sos.id !== sosData.id);
+            console.log('[MapPage] 🗑️ Removed cancelled/done SOS from list:', sosData.id);
+            return updated;
+          }
+          return prev;
+        }
+        
+        if (index !== -1) {
+          // Cập nhật SOS đã tồn tại - QUAN TRỌNG: cập nhật assignedStationId nếu có
+          const updated = [...prev];
+          updated[index] = sosData;
+          // Nếu có assignedStationId mới, log để debug
+          if (sosData.assignedStationId && !prev[index]?.assignedStationId) {
+            console.log('[MapPage] ✅ SOS got assignedStationId:', sosData.assignedStationId, '- UserSidePanel will auto-reload station info');
+          }
+          return updated;
+        } else {
+          // Nếu chưa có và status không phải cancelled/done, thêm mới
+          if (sosData.assignedStationId) {
+            console.log('[MapPage] ✅ New SOS with assignedStationId:', sosData.assignedStationId, '- UserSidePanel will auto-reload station info');
+          }
+          return [...prev, sosData];
+        }
+      });
+      
+      // QUAN TRỌNG: Nếu SOS done/cancelled, phải reload map data để loại bỏ marker
+      if (sosData.status === 'cancelled' || sosData.status === 'done') {
+        console.log('[MapPage] 🔄 Reloading map data to remove done/cancelled SOS marker');
+        // Loại bỏ SOS entity khỏi entities state ngay lập tức
+        setEntities(prev => prev.filter(entity => 
+          !(entity.type === 'sos' && entity.id === sosData.id)
+        ));
+        // Sau đó reload từ server để đảm bảo đồng bộ
+        await loadMapData();
       }
+      
+      // Reload để đảm bảo đồng bộ với server (sẽ trigger UserSidePanel useEffect)
       await refreshRealtimeData();
     });
 
     // Lắng nghe event riêng cho claim để đảm bảo cập nhật ngay lập tức
     newSocket.on('sos:claimed', async (sosData) => {
-      if (import.meta.env.DEV) {
-        console.log('[MapPage] 📡 Received sos:claimed event:', sosData);
-      }
-      // Reload ngay để cập nhật thông tin trạm cho user
+      console.log('[MapPage] 📡 Received sos:claimed event:', sosData);
+      
+      // Cập nhật state ngay lập tức - QUAN TRỌNG để UserSidePanel tự động reload station info
+      setSosList(prev => {
+        const index = prev.findIndex(sos => sos.id === sosData.id);
+        if (index !== -1) {
+          const updated = [...prev];
+          updated[index] = sosData; // Cập nhật với assignedStationId mới
+          console.log('[MapPage] ✅ Updated SOS in list with assignedStationId:', sosData.assignedStationId);
+          return updated;
+        }
+        // Nếu chưa có, thêm mới
+        console.log('[MapPage] ✅ Added new SOS to list with assignedStationId:', sosData.assignedStationId);
+        return [...prev, sosData];
+      });
+      
+      // Reload để đảm bảo đồng bộ (sẽ trigger UserSidePanel useEffect)
       await refreshRealtimeData();
     });
 
     // Lắng nghe event riêng cho reassign để đảm bảo cập nhật ngay lập tức
-    newSocket.on('sos:reassigned', async () => {
-      // Tự động reload SOS list và map data khi có reassign
+    newSocket.on('sos:reassigned', async (sosData) => {
+      console.log('[MapPage] 📡 Received sos:reassigned event:', sosData);
+      
+      // Cập nhật state ngay lập tức
+      if (sosData) {
+        setSosList(prev => {
+          const index = prev.findIndex(sos => sos.id === sosData.id);
+          if (index !== -1) {
+            const updated = [...prev];
+            updated[index] = sosData;
+            return updated;
+          }
+          return [...prev, sosData];
+        });
+      }
+      
+      // Reload để đảm bảo đồng bộ
       await refreshRealtimeData();
     });
 
@@ -882,9 +1012,36 @@ export default function MapPage() {
                 showSOSModal={showSOSModal}
                 onCancelSOS={async (sosId) => {
                   try {
-                    await apiClient.patch(`/sos/${sosId}/status`, { status: 'cancelled' });
-                    loadSOSList();
-                    loadMapData();
+                    // Thử hủy SOS với retry logic
+                    let retries = 2;
+                    let lastError = null;
+                    
+                    while (retries >= 0) {
+                      try {
+                        await apiClient.patch(`/sos/${sosId}/status`, { status: 'cancelled' });
+                        console.log('[MapPage] ✅ SOS cancelled successfully:', sosId);
+                        // Thành công, reload data
+                        await Promise.all([loadSOSList(), loadMapData()]);
+                        return; // Thoát nếu thành công
+                      } catch (error: any) {
+                        lastError = error;
+                        console.error(`[MapPage] ❌ Error cancelling SOS (${2 - retries + 1}/3):`, error);
+                        
+                        // Nếu là lỗi network/CORS, thử lại sau 1 giây
+                        if (retries > 0 && (error.code === 'ERR_NETWORK' || error.message?.includes('CORS') || error.message?.includes('502'))) {
+                          console.log('[MapPage] 🔄 Retrying cancel SOS in 1 second...');
+                          await new Promise(resolve => setTimeout(resolve, 1000));
+                          retries--;
+                        } else {
+                          // Không phải lỗi network, không retry
+                          break;
+                        }
+                      }
+                    }
+                    
+                    // Nếu tất cả retry đều fail, hiển thị lỗi
+                    console.error('[MapPage] ❌ Failed to cancel SOS after retries:', lastError);
+                    alert('Không thể hủy SOS. Vui lòng thử lại hoặc reload trang.');
                   } catch (error) {
                     console.error('Error cancelling SOS:', error);
                     alert('Không thể hủy SOS. Vui lòng thử lại.');

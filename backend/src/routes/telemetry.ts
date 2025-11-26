@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { readJson, writeJson } from '../services/dataService';
 import { Telemetry, Device, User, SOS } from '../types';
 import { Server } from 'socket.io';
+import { findNextStationForSOS } from './sos';
 
 const router = Router();
 const HARDWARE_PRIORITY_WINDOW_MS = 60 * 1000; // 60 giây ưu tiên dữ liệu phần cứng
@@ -102,24 +103,42 @@ function createAutoSOS(
     writeJson('sos.json', sosList);
     console.log(`[TELEMETRY] 🆘 Đã tự động tạo SOS: ${newSOS.id} cho user ${userId}`);
     
-    // Tự động tìm và gán trạm gần nhất
+    // Tự động tìm và gán trạm - ƯU TIÊN các trạm đã bấm "Sẵn sàng hỗ trợ" (nếu có)
     try {
-      const nearestStation = findNearestStation(lat, lon, sosType);
+      // Dùng findNextStationForSOS để đảm bảo ưu tiên ready stations (nếu có)
+      // Khi SOS mới tạo từ phần cứng, thường chưa có trạm nào bấm "Sẵn sàng", 
+      // nhưng vẫn dùng hàm này để nhất quán và hỗ trợ trường hợp có trạm đã bấm sẵn sàng trước đó
+      const nearestStation = findNextStationForSOS(newSOS);
       
       if (nearestStation) {
         const sosIndex = sosList.findIndex(s => s.id === newSOS.id);
         if (sosIndex !== -1) {
           sosList[sosIndex].assignedStationId = nearestStation.id;
           sosList[sosIndex].status = 'pending';
+          
+          // QUAN TRỌNG: Set assignment deadline để trạm có đếm ngược và nút "Nhận nhiệm vụ"
+          const now = Date.now();
+          const ASSIGNMENT_TIMEOUT_MS = 2 * 60 * 1000; // 2 phút
+          sosList[sosIndex].assignedAt = new Date(now).toISOString();
+          sosList[sosIndex].assignmentExpiresAt = new Date(now + ASSIGNMENT_TIMEOUT_MS).toISOString();
+          
           sosList[sosIndex].updatedAt = new Date().toISOString();
           writeJson('sos.json', sosList);
           
+          // Cập nhật newSOS để broadcast
           newSOS.assignedStationId = nearestStation.id;
           newSOS.status = 'pending';
+          newSOS.assignedAt = sosList[sosIndex].assignedAt;
+          newSOS.assignmentExpiresAt = sosList[sosIndex].assignmentExpiresAt;
           newSOS.updatedAt = sosList[sosIndex].updatedAt;
           
-          console.log(`[TELEMETRY] 🏥 SOS ${newSOS.id} đã được gán cho trạm ${nearestStation.id} (${nearestStation.stationName})`);
+          const isReadyStation = newSOS.readyStationIds?.includes(nearestStation.id);
+          console.log(`[TELEMETRY] 🏥 SOS ${newSOS.id} đã được gán cho trạm ${nearestStation.id} (${nearestStation.stationName}) với deadline ${sosList[sosIndex].assignmentExpiresAt}`);
+          console.log(`[TELEMETRY] ${isReadyStation ? '✅ Trạm này đã bấm "Sẵn sàng" - được ưu tiên!' : 'ℹ️ Trạm này chưa bấm "Sẵn sàng"'}`);
+          console.log(`[TELEMETRY] ℹ️ Khi trạm này không nhận, hệ thống sẽ ưu tiên các trạm đã bấm "Sẵn sàng hỗ trợ"`);
         }
+      } else {
+        console.log(`[TELEMETRY] ⚠️ Không tìm thấy trạm phù hợp cho SOS ${newSOS.id}`);
       }
     } catch (autoAssignError: any) {
       console.error('[TELEMETRY] Error auto-assigning station:', autoAssignError.message);

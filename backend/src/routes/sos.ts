@@ -30,7 +30,7 @@ function getRequiredStationType(sosType: string): 'medical' | 'rescue' | null {
 }
 
 // Tìm trạm từ danh sách readyStationIds, sắp xếp theo khoảng cách (gần đến xa)
-function findNearestFromReadyStations(
+export function findNearestFromReadyStations(
   sosLat: number,
   sosLon: number,
   sosType: string,
@@ -134,15 +134,25 @@ function clearAssignmentDeadline(sosList: SOS[], index: number) {
   sosList[index].assignmentExpiresAt = undefined;
 }
 
-function findNextStationForSOS(sos: SOS): Station | null {
+export function findNextStationForSOS(sos: SOS): Station | null {
   if (!sos.location) {
     return null;
   }
   const rejectedStations = sos.rejectedStationIds || [];
   const readyStations = sos.readyStationIds || [];
 
+  console.log(`\n[findNextStationForSOS] ========================================`);
+  console.log(`[findNextStationForSOS] Tìm trạm tiếp theo cho SOS ${sos.id}:`);
+  console.log(`[findNextStationForSOS]   - Ready stations (${readyStations.length}):`, readyStations);
+  console.log(`[findNextStationForSOS]   - Rejected stations (${rejectedStations.length}):`, rejectedStations);
+  console.log(`[findNextStationForSOS]   - SOS location:`, sos.location);
+  console.log(`[findNextStationForSOS]   - SOS type:`, sos.type);
+
   let nextStation: Station | null = null;
+  
+  // ƯU TIÊN 1: Tìm trong các trạm đã bấm "Sẵn sàng hỗ trợ" (sắp xếp theo khoảng cách)
   if (readyStations.length > 0) {
+    console.log(`[findNextStationForSOS] 🔍 Ưu tiên tìm trong ${readyStations.length} trạm sẵn sàng...`);
     nextStation = findNearestFromReadyStations(
       sos.location.lat,
       sos.location.lon,
@@ -150,21 +160,115 @@ function findNextStationForSOS(sos: SOS): Station | null {
       readyStations,
       rejectedStations
     );
+    if (nextStation) {
+      console.log(`[findNextStationForSOS] ✅ Tìm thấy trạm sẵn sàng gần nhất: ${nextStation.id} (${nextStation.stationName || 'Unknown'})`);
+    } else {
+      console.log(`[findNextStationForSOS] ⚠️ Không tìm thấy trạm sẵn sàng phù hợp`);
+    }
+  } else {
+    console.log(`[findNextStationForSOS] ℹ️ Không có trạm sẵn sàng, tìm trạm gần nhất...`);
   }
 
+  // ƯU TIÊN 2: Nếu không có trạm sẵn sàng, tìm trạm gần nhất
   if (!nextStation) {
+    console.log(`[findNextStationForSOS] 🔍 Tìm trạm gần nhất (không có trạm sẵn sàng)...`);
     nextStation = findNearestStation(
       sos.location.lat,
       sos.location.lon,
       sos.type,
       rejectedStations
     );
+    if (nextStation) {
+      console.log(`[findNextStationForSOS] ✅ Tìm thấy trạm gần nhất: ${nextStation.id} (${nextStation.stationName || 'Unknown'})`);
+    } else {
+      console.log(`[findNextStationForSOS] ❌ Không tìm thấy trạm nào`);
+    }
   }
 
   return nextStation;
 }
 
+// Hàm kiểm tra và reassign nếu có trạm sẵn sàng tốt hơn (chỉ khi SOS đang pending và chưa accept)
+function checkAndReassignToReadyStation(sos: SOS, sosList: SOS[], index: number, io?: Server): boolean {
+  // Chỉ reassign nếu:
+  // 1. SOS đang pending (chưa accept)
+  // 2. Có assignedStationId (đã được gán)
+  // 3. Có readyStationIds (có trạm sẵn sàng)
+  // 4. Trạm hiện tại KHÔNG trong readyStationIds (trạm hiện tại chưa bấm sẵn sàng)
+  if (!sos.location || 
+      sos.status !== 'pending' || 
+      !sos.assignedStationId || 
+      !sos.readyStationIds || 
+      sos.readyStationIds.length === 0) {
+    return false;
+  }
+
+  // Nếu trạm hiện tại đã bấm sẵn sàng, không cần reassign
+  if (sos.readyStationIds.includes(sos.assignedStationId)) {
+    return false;
+  }
+
+  // Tìm trạm sẵn sàng gần nhất (loại trừ trạm hiện tại)
+  const readyStation = findNearestFromReadyStations(
+    sos.location.lat,
+    sos.location.lon,
+    sos.type,
+    sos.readyStationIds,
+    [sos.assignedStationId] // Loại trừ trạm hiện tại
+  );
+
+  if (!readyStation) {
+    return false;
+  }
+
+  // Tính khoảng cách để so sánh
+  const stations = readJson<Station>('stations.json');
+  const currentStation = stations.find(s => s.id === sos.assignedStationId);
+  
+  if (currentStation && currentStation.lat && currentStation.lon) {
+    const currentDistance = calculateDistance(
+      sos.location.lat,
+      sos.location.lon,
+      currentStation.lat,
+      currentStation.lon
+    );
+    const readyDistance = calculateDistance(
+      sos.location.lat,
+      sos.location.lon,
+      readyStation.lat,
+      readyStation.lon
+    );
+
+    // Reassign nếu trạm sẵn sàng gần hơn HOẶC nếu gần tương đương (ưu tiên trạm sẵn sàng)
+    // Cho phép reassign nếu trạm sẵn sàng gần hơn hoặc chênh lệch < 2km (ưu tiên trạm chủ động)
+    const shouldReassign = readyDistance < currentDistance || (currentDistance - readyDistance) < 2;
+    
+    if (shouldReassign) {
+      console.log(`[REASSIGN] 🔄 Reassigning SOS ${sos.id} from station ${sos.assignedStationId} (${currentDistance.toFixed(2)} km) to ready station ${readyStation.id} (${readyDistance.toFixed(2)} km)`);
+      
+      // Thêm trạm cũ vào rejected
+      const rejectedStations = new Set(sos.rejectedStationIds || []);
+      rejectedStations.add(sos.assignedStationId);
+      sosList[index].rejectedStationIds = Array.from(rejectedStations);
+      
+      // Reassign
+      sosList[index].assignedStationId = readyStation.id;
+      setAssignmentDeadline(sosList, index);
+      sosList[index].updatedAt = new Date().toISOString();
+      
+      // Xóa trạm mới khỏi readyStationIds
+      const filteredReadyStations = sos.readyStationIds.filter(id => id !== readyStation.id);
+      sosList[index].readyStationIds = filteredReadyStations.length > 0 ? filteredReadyStations : undefined;
+      
+      return true;
+    }
+  }
+
+  return false;
+}
+
 export function enforceAssignmentTimeouts(io?: Server): SOS[] {
+  // QUAN TRỌNG: Đọc lại từ file để có readyStationIds mới nhất (có thể đã được cập nhật bởi trạm bấm "Sẵn sàng")
   let sosList = readJson<SOS>('sos.json');
   if (!Array.isArray(sosList)) {
     sosList = [];
@@ -174,6 +278,24 @@ export function enforceAssignmentTimeouts(io?: Server): SOS[] {
   let changed = false;
   const updatedItems: SOS[] = [];
 
+  // Log để debug readyStationIds - ĐỌC TỪ FILE
+  console.log(`\n[enforceAssignmentTimeouts] ========================================`);
+  console.log(`[enforceAssignmentTimeouts] Checking ${sosList.length} SOS for expired assignments and ready stations...`);
+  sosList.forEach((sos) => {
+    if (sos && sos.readyStationIds && sos.readyStationIds.length > 0) {
+      console.log(`[enforceAssignmentTimeouts] ✅ SOS ${sos.id} has ${sos.readyStationIds.length} ready stations:`, sos.readyStationIds);
+    }
+  });
+
+  // BƯỚC 1: Kiểm tra và reassign sang trạm sẵn sàng (nếu có trạm sẵn sàng tốt hơn)
+  sosList.forEach((sos, index) => {
+    if (checkAndReassignToReadyStation(sos, sosList, index, io)) {
+      changed = true;
+      updatedItems.push(sosList[index]);
+    }
+  });
+
+  // BƯỚC 2: Kiểm tra timeout (hết thời gian)
   sosList.forEach((sos, index) => {
     if (
       sos &&
@@ -184,21 +306,41 @@ export function enforceAssignmentTimeouts(io?: Server): SOS[] {
       const expiresAt = Date.parse(sos.assignmentExpiresAt);
       if (!Number.isNaN(expiresAt) && expiresAt <= now) {
         console.log(`[SOS] ⏳ Assignment for ${sos.id} expired for station ${sos.assignedStationId}`);
+        console.log(`[SOS] 📋 Ready stations before reassign:`, sos.readyStationIds);
+        console.log(`[SOS] 📋 Rejected stations before reassign:`, sos.rejectedStationIds);
+
+        // QUAN TRỌNG: Đọc lại từ file để có readyStationIds mới nhất (tránh cache)
+        // Có thể trạm đã bấm "Sẵn sàng" sau khi SOS được tạo
+        const freshSosList = readJson<SOS>('sos.json');
+        const freshSos = freshSosList.find(s => s.id === sos.id);
+        if (freshSos) {
+          // Cập nhật readyStationIds từ file mới nhất
+          sos.readyStationIds = freshSos.readyStationIds || [];
+          sos.rejectedStationIds = freshSos.rejectedStationIds || [];
+          console.log(`[TIMEOUT] 📥 Đọc lại từ file - Ready stations:`, sos.readyStationIds);
+          console.log(`[TIMEOUT] 📥 Đọc lại từ file - Rejected stations:`, sos.rejectedStationIds);
+        }
 
         const rejectedStations = new Set(sos.rejectedStationIds || []);
         rejectedStations.add(sos.assignedStationId);
         sos.rejectedStationIds = Array.from(rejectedStations);
 
+        // Tìm trạm tiếp theo - ƯU TIÊN các trạm đã bấm "Sẵn sàng hỗ trợ"
         const nextStation = findNextStationForSOS(sos);
         if (nextStation) {
           console.log(`[SOS] 🔁 Reassigning ${sos.id} to station ${nextStation.id}`);
+          console.log(`[SOS] 📋 Ready stations before reassign:`, sos.readyStationIds);
+          console.log(`[SOS] ✅ Next station ${nextStation.id} ${sos.readyStationIds?.includes(nextStation.id) ? 'WAS in ready list (priority)' : 'was NOT in ready list'}`);
+          
           sos.assignedStationId = nextStation.id;
           setAssignmentDeadline(sosList, index);
           sos.updatedAt = new Date().toISOString();
 
+          // Xóa trạm mới được gán khỏi readyStationIds (nếu có)
           if (sos.readyStationIds && sos.readyStationIds.length > 0) {
             const filteredReadyStations = sos.readyStationIds.filter(id => id !== nextStation.id);
             sos.readyStationIds = filteredReadyStations.length > 0 ? filteredReadyStations : undefined;
+            console.log(`[SOS] 📋 Ready stations after reassign:`, sos.readyStationIds);
           }
         } else {
           console.log(`[SOS] ⚠️ No available station to reassign ${sos.id}`);
@@ -287,12 +429,14 @@ router.post('/', (req: Request, res: Response) => {
     writeJson('sos.json', sosList);
     console.log(`SOS created successfully: ${newSOS.id}`);
 
-    // Tự động tìm và gán trạm gần nhất
+    // Tự động tìm và gán trạm - ƯU TIÊN các trạm đã bấm "Sẵn sàng hỗ trợ" (nếu có)
     try {
-      const nearestStation = findNearestStation(lat, lon, newSOS.type);
+      // Dùng findNextStationForSOS để đảm bảo ưu tiên ready stations (nếu có)
+      // Khi SOS mới tạo, readyStationIds thường rỗng, nhưng vẫn dùng hàm này để nhất quán
+      const nearestStation = findNextStationForSOS(newSOS);
       
       if (nearestStation) {
-        // Tự động gán SOS cho trạm gần nhất - đặt status = 'pending' (đang kết nối)
+        // Tự động gán SOS cho trạm - đặt status = 'pending' (đang kết nối)
         // Trạm sẽ phải claim (nhận) thì mới chuyển sang 'accepted'
         const sosIndex = sosList.findIndex(s => s.id === newSOS.id);
         if (sosIndex !== -1) {
@@ -302,7 +446,9 @@ router.post('/', (req: Request, res: Response) => {
           sosList[sosIndex].updatedAt = new Date().toISOString();
           writeJson('sos.json', sosList);
           
+          const isReadyStation = newSOS.readyStationIds?.includes(nearestStation.id);
           console.log(`SOS ${newSOS.id} automatically assigned to station ${nearestStation.id} (${nearestStation.stationName}), status: pending (waiting for station to accept)`);
+          console.log(`  ${isReadyStation ? '✅ Trạm này đã bấm "Sẵn sàng" - được ưu tiên!' : 'ℹ️ Trạm này chưa bấm "Sẵn sàng"'}`);
           
           // Cập nhật newSOS để trả về
           newSOS.assignedStationId = nearestStation.id;
@@ -560,37 +706,29 @@ router.patch('/:id/status', (req: Request, res: Response) => {
         }
         console.log(`Danh sách trạm đã từ chối:`, rejectedStations);
         
+        // QUAN TRỌNG: Đọc lại từ file để có readyStationIds mới nhất (tránh cache)
+        // Có thể trạm đã bấm "Sẵn sàng" sau khi SOS được tạo
+        const freshSosList = readJson<SOS>('sos.json');
+        const freshSos = freshSosList.find(s => s.id === id);
+        if (freshSos) {
+          // Cập nhật readyStationIds và rejectedStationIds từ file mới nhất
+          sos.readyStationIds = freshSos.readyStationIds || [];
+          sos.rejectedStationIds = [...(freshSos.rejectedStationIds || []), ...rejectedStations.filter(r => !freshSos.rejectedStationIds?.includes(r))];
+          console.log(`[STATUS] 📥 Đọc lại từ file - Ready stations:`, sos.readyStationIds);
+          console.log(`[STATUS] 📥 Đọc lại từ file - Rejected stations:`, sos.rejectedStationIds);
+        }
+        
         // TỰ ĐỘNG TÍNH TOÁN VÀ TÌM TRẠM TIẾP THEO NGAY LẬP TỨC
         // Ưu tiên: 1) Các trạm đã ấn "Sẵn sàng" (sắp xếp theo khoảng cách), 2) Trạm gần nhất như bình thường
+        // Dùng findNextStationForSOS để đảm bảo logic ưu tiên nhất quán
         const readyStations = sos.readyStationIds || [];
-        console.log(`Đang tìm trạm tiếp theo (loại trừ ${rejectedStations.length} trạm đã từ chối, có ${readyStations.length} trạm sẵn sàng)...`);
+        console.log(`Đang tìm trạm tiếp theo (loại trừ ${sos.rejectedStationIds?.length || 0} trạm đã từ chối, có ${readyStations.length} trạm sẵn sàng)...`);
         
-        let nextStation: Station | null = null;
+        // Cập nhật rejectedStationIds trước khi tìm
+        sos.rejectedStationIds = rejectedStations;
         
-        // Ưu tiên tìm trong các trạm đã ấn "Sẵn sàng"
-        if (readyStations.length > 0) {
-          nextStation = findNearestFromReadyStations(
-            sos.location.lat,
-            sos.location.lon,
-            sos.type,
-            readyStations,
-            rejectedStations // Loại trừ các trạm đã từ chối
-          );
-          if (nextStation) {
-            console.log(`✅ Tìm thấy trạm sẵn sàng gần nhất: ${nextStation.id} (${nextStation.stationName || 'Unknown'})`);
-          }
-        }
-        
-        // Nếu không có trạm sẵn sàng, tìm trạm gần nhất như bình thường
-        if (!nextStation) {
-          console.log(`Không có trạm sẵn sàng, tìm trạm gần nhất như bình thường...`);
-          nextStation = findNearestStation(
-            sos.location.lat, 
-            sos.location.lon, 
-            sos.type,
-            rejectedStations // Loại trừ tất cả các trạm đã từ chối
-          );
-        }
+        // Dùng findNextStationForSOS để đảm bảo ưu tiên ready stations
+        const nextStation = findNextStationForSOS(sos);
         
         if (nextStation) {
           // TỰ ĐỘNG CẬP NHẬT TRẠM MỚI NGAY LẬP TỨC
@@ -739,7 +877,8 @@ router.patch('/:id/ready', (req: Request, res: Response) => {
       // Thêm trạm vào danh sách sẵn sàng
       readyStations.push(stationId);
       sosList[sosIndex].readyStationIds = readyStations;
-      console.log(`Station ${stationId} marked as ready for SOS ${id}`);
+      console.log(`[READY] ✅ Station ${stationId} marked as ready for SOS ${id}`);
+      console.log(`[READY] 📋 Ready stations list:`, readyStations);
     } else if (ready === false && isReady) {
       // Xóa trạm khỏi danh sách sẵn sàng
       const index = readyStations.indexOf(stationId);
@@ -747,17 +886,28 @@ router.patch('/:id/ready', (req: Request, res: Response) => {
         readyStations.splice(index, 1);
       }
       sosList[sosIndex].readyStationIds = readyStations.length > 0 ? readyStations : undefined;
-      console.log(`Station ${stationId} unmarked as ready for SOS ${id}`);
+      console.log(`[READY] ❌ Station ${stationId} unmarked as ready for SOS ${id}`);
+      console.log(`[READY] 📋 Ready stations list after removal:`, sosList[sosIndex].readyStationIds);
+    } else {
+      console.log(`[READY] ℹ️ No change needed - station ${stationId} ready status: ${isReady}, requested: ${ready}`);
     }
 
     sosList[sosIndex].updatedAt = new Date().toISOString();
     writeJson('sos.json', sosList);
+    console.log(`[READY] 💾 Saved SOS ${id} with readyStationIds:`, sosList[sosIndex].readyStationIds);
 
-    // Broadcast update
+    // Broadcast update - QUAN TRỌNG để tất cả trạm thấy readyStationIds được cập nhật
     const io = getIO(req);
-    io.emit('sos:update', sosList[sosIndex]);
+    const updatedSOS = sosList[sosIndex];
+    console.log(`[SOS] 📡 Broadcasting ready status update for SOS ${id}:`, {
+      stationId,
+      ready,
+      readyStationIds: updatedSOS.readyStationIds,
+      assignedStationId: updatedSOS.assignedStationId
+    });
+    io.emit('sos:update', updatedSOS);
 
-    res.json(sosList[sosIndex]);
+    res.json(updatedSOS);
   } catch (error: any) {
     console.error('Toggle ready status error:', error);
     res.status(500).json({ error: 'Lỗi server' });
@@ -793,14 +943,27 @@ router.patch('/:id/reject', (req: Request, res: Response) => {
     }
 
     console.log(`Station ${stationId} rejecting SOS ${id}, finding next nearest station...`);
+    
+    // QUAN TRỌNG: Đọc lại từ file để có readyStationIds mới nhất (tránh cache)
+    const freshSosList = readJson<SOS>('sos.json');
+    const freshSos = freshSosList.find(s => s.id === id);
+    if (freshSos) {
+      // Cập nhật readyStationIds từ file mới nhất
+      sos.readyStationIds = freshSos.readyStationIds || [];
+      sos.rejectedStationIds = freshSos.rejectedStationIds || [];
+      console.log(`[REJECT] 📥 Đọc lại từ file - Ready stations:`, sos.readyStationIds);
+      console.log(`[REJECT] 📥 Đọc lại từ file - Rejected stations:`, sos.rejectedStationIds);
+    } else {
+      console.log(`[REJECT] Ready stations (from memory):`, sos.readyStationIds);
+      console.log(`[REJECT] Rejected stations (from memory):`, sos.rejectedStationIds);
+    }
 
-    // Tìm trạm tiếp theo (loại trừ trạm đã từ chối)
-    const nextStation = findNearestStation(
-      sos.location.lat,
-      sos.location.lon,
-      sos.type,
-      [stationId] // Loại trừ trạm đã từ chối
-    );
+    // Tìm trạm tiếp theo - ƯU TIÊN các trạm đã bấm "Sẵn sàng hỗ trợ"
+    const rejectedStations = [...(sos.rejectedStationIds || []), stationId];
+    const nextStation = findNextStationForSOS({
+      ...sos,
+      rejectedStationIds: rejectedStations
+    });
 
     if (nextStation) {
       // Gán cho trạm tiếp theo

@@ -72,7 +72,16 @@ export default function UserSidePanel({
       // Load thông tin trạm song song để nhanh hơn
       const stationPromises = sosToLoad.map(async (sos) => {
         try {
-          const response = await apiClient.get(`/stations/${sos.assignedStationId}`);
+          // Thêm timeout để tránh loading mãi mãi
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Timeout loading station info')), 10000)
+          );
+          
+          const response = await Promise.race([
+            apiClient.get(`/stations/${sos.assignedStationId}`),
+            timeoutPromise
+          ]) as any;
+          
           const stationData = response.data;
           
           // Tính khoảng cách nếu có vị trí
@@ -89,7 +98,41 @@ export default function UserSidePanel({
           return { sosId: sos.id, stationData };
         } catch (error: any) {
           console.error(`Error loading station info for SOS ${sos.id}:`, error);
-          return { sosId: sos.id, stationData: null };
+          // Retry nhiều lần nếu lỗi network/CORS/502
+          if (error.code === 'ERR_NETWORK' || error.message?.includes('CORS') || error.message?.includes('502') || error.message?.includes('Bad Gateway')) {
+            console.log(`[UserSidePanel] 🔄 Retrying station info for SOS ${sos.id}...`);
+            // Retry 3 lần với exponential backoff
+            for (let retry = 0; retry < 3; retry++) {
+              try {
+                const delay = (retry + 1) * 2000; // 2s, 4s, 6s
+                console.log(`[UserSidePanel] Retry ${retry + 1}/3 after ${delay}ms...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+                
+                const retryResponse = await apiClient.get(`/stations/${sos.assignedStationId}`);
+                const stationData = retryResponse.data;
+                
+                if (profile?.lat && profile?.lon && stationData.lat && stationData.lon && sos.location) {
+                  const distance = calculateDistance(
+                    sos.location.lat,
+                    sos.location.lon,
+                    stationData.lat,
+                    stationData.lon
+                  );
+                  stationData.distance = distance;
+                }
+                
+                console.log(`[UserSidePanel] ✅ Successfully loaded station info on retry ${retry + 1}`);
+                return { sosId: sos.id, stationData };
+              } catch (retryError: any) {
+                console.error(`[UserSidePanel] Retry ${retry + 1} failed:`, retryError);
+                if (retry === 2) {
+                  // Lần retry cuối cùng cũng fail
+                  return { sosId: sos.id, stationData: null, error: true };
+                }
+              }
+            }
+          }
+          return { sosId: sos.id, stationData: null, error: true };
         }
       });
       
@@ -617,8 +660,11 @@ export default function UserSidePanel({
                   </div>
                 ) : (
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
-                    <div className="text-yellow-700 text-sm">
+                    <div className="text-yellow-700 text-sm mb-2">
                       🔄 Đang tải thông tin trạm...
+                    </div>
+                    <div className="text-xs text-yellow-600">
+                      Nếu thông tin không tải được, vui lòng thử reload trang
                     </div>
                   </div>
                 )}

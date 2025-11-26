@@ -1520,17 +1520,1222 @@
       "lat": 21.1001382,
       "lon": 105.8625921
     },
-    "status": "pending",
+    "status": "cancelled",
     "note": "",
     "rejectedStationIds": [
       "S0040",
-      "S0038"
+      "S0038",
+      "S0031"
     ],
     "readyStationIds": [],
     "createdAt": "2025-11-25T16:57:29.006Z",
-    "updatedAt": "2025-11-25T17:01:38.968Z",
+    "updatedAt": "2025-11-25T20:09:29.638Z"
+  },
+  {
+    "id": "SOS1764102591315",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 21.080173,
+      "lon": 105.868416
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-25T20:29:51.315Z",
+    "updatedAt": "2025-11-25T20:31:07.869Z"
+  },
+  {
+    "id": "SOS1764102786819",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "critical",
+    "location": {
+      "lat": 21.080173,
+      "lon": 105.868416
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-25T20:33:06.819Z",
+    "updatedAt": "2025-11-25T20:34:02.625Z"
+  },
+  {
+    "id": "SOS1764103072928",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 21.080173,
+      "lon": 105.868416
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [
+      "S0032"
+    ],
+    "readyStationIds": [],
+    "createdAt": "2025-11-25T20:37:52.928Z",
+    "updatedAt": "2025-11-25T20:41:07.414Z"
+  },
+  {
+    "id": "SOS1764103286263",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "critical",
+    "location": {
+      "lat": 21.080173,
+      "lon": 105.868416
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-25T20:41:26.263Z",
+    "updatedAt": "2025-11-25T20:41:33.150Z"
+  },
+  {
+    "id": "SOS1764103307641",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "critical",
+    "location": {
+      "lat": 21.080173,
+      "lon": 105.868416
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-25T20:41:47.641Z",
+    "updatedAt": "2025-11-25T20:41:54.917Z"
+  },
+  {
+    "id": "SOS1764103320732",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 21.080173,
+      "lon": 105.868416
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-25T20:42:00.732Z",
+    "updatedAt": "2025-11-25T20:42:08.035Z"
+  },
+  {
+    "id": "SOS1764103343122",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "critical",
+    "location": {
+      "lat": 21.080173,
+      "lon": 105.868416
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-25T20:42:23.122Z",
+    "updatedAt": "2025-11-25T20:42:34.451Z"
+  },
+  {
+    "id": "SOS1764103380164",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "critical",
+    "location": {
+      "lat": 21.080173,
+      "lon": 105.868416
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-25T20:43:00.164Z",
+    "updatedAt": "2025-11-25T20:43:04.075Z"
+  },
+  {
+    "id": "SOS1764103610214",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 21.080173,
+      "lon": 105.868416
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-25T20:46:50.214Z",
+    "updatedAt": "2025-11-25T20:47:06.419Z"
+  },
+  {
+    "id": "SOS1764103631751",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 21.080173,
+      "lon": 105.868416
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-25T20:47:11.751Z",
+    "updatedAt": "2025-11-25T20:48:23.307Z"
+  },
+  {
+    "id": "SOS1764103690482",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 21.080173,
+      "lon": 105.868416
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-25T20:48:10.482Z",
+    "updatedAt": "2025-11-25T20:48:33.265Z"
+  },
+  {
+    "id": "SOS1764103719000",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 21.080173,
+      "lon": 105.868416
+    },
+    "status": "done",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-25T20:48:39.000Z",
+    "updatedAt": "2025-11-25T20:49:10.649Z",
+    "assignedStationId": "S0032"
+  },
+  {
+    "id": "SOS1764114561752",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 21.080173,
+      "lon": 105.868416
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-25T23:49:21.752Z",
+    "updatedAt": "2025-11-25T23:49:31.020Z"
+  },
+  {
+    "id": "SOS1764114575642",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 21.080173,
+      "lon": 105.868416
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-25T23:49:35.642Z",
+    "updatedAt": "2025-11-25T23:49:44.020Z"
+  },
+  {
+    "id": "SOS1764114590158",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 21.080173,
+      "lon": 105.868416
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [
+      "S0032",
+      "S0031",
+      "S0038",
+      "S0040",
+      "S0035",
+      "S0033",
+      "S0002"
+    ],
+    "readyStationIds": [],
+    "createdAt": "2025-11-25T23:49:50.158Z",
+    "updatedAt": "2025-11-26T00:04:29.875Z"
+  },
+  {
+    "id": "SOS1764115747279",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 21.080173,
+      "lon": 105.868416
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T00:09:07.279Z",
+    "updatedAt": "2025-11-26T00:10:05.845Z"
+  },
+  {
+    "id": "SOS1764115811516",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "critical",
+    "location": {
+      "lat": 21.080173,
+      "lon": 105.868416
+    },
+    "status": "done",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T00:10:11.516Z",
+    "updatedAt": "2025-11-26T00:10:32.096Z",
+    "assignedStationId": "S0032"
+  },
+  {
+    "id": "SOS1764115838027",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "critical",
+    "location": {
+      "lat": 21.080173,
+      "lon": 105.868416
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T00:10:38.027Z",
+    "updatedAt": "2025-11-26T00:11:08.694Z"
+  },
+  {
+    "id": "SOS1764115873928",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 21.080173,
+      "lon": 105.868416
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T00:11:13.928Z",
+    "updatedAt": "2025-11-26T00:11:25.340Z"
+  },
+  {
+    "id": "SOS1764115908999",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 21.080173,
+      "lon": 105.868416
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T00:11:48.999Z",
+    "updatedAt": "2025-11-26T00:12:01.151Z"
+  },
+  {
+    "id": "SOS1764115949764",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "critical",
+    "location": {
+      "lat": 21.080173,
+      "lon": 105.868416
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [
+      "S0032"
+    ],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T00:12:29.764Z",
+    "updatedAt": "2025-11-26T00:14:55.206Z"
+  },
+  {
+    "id": "SOS1764116100107",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "critical",
+    "location": {
+      "lat": 21.080173,
+      "lon": 105.868416
+    },
+    "status": "done",
+    "note": "",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T00:15:00.107Z",
+    "updatedAt": "2025-11-26T00:15:25.598Z",
+    "assignedStationId": "S0032"
+  },
+  {
+    "id": "SOS1764116130281",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 21.080173,
+      "lon": 105.868416
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [
+      "S0032"
+    ],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T00:15:30.281Z",
+    "updatedAt": "2025-11-26T00:16:34.941Z"
+  },
+  {
+    "id": "SOS1764119093791",
+    "userId": "U0001",
+    "deviceId": "DHW_U0001",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 21.080124,
+      "lon": 105.868408
+    },
+    "status": "cancelled",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH | Tự động tắt bởi phần cứng: NORMAL event",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T01:04:53.791Z",
+    "updatedAt": "2025-11-26T01:07:56.380Z",
+    "assignedStationId": "S0032"
+  },
+  {
+    "id": "SOS1764119317122",
+    "userId": "U0001",
+    "deviceId": "DHW_U0001",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 21.080151,
+      "lon": 105.868393
+    },
+    "status": "cancelled",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T01:08:37.122Z",
+    "updatedAt": "2025-11-26T01:14:27.859Z"
+  },
+  {
+    "id": "SOS1764119681059",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "critical",
+    "location": {
+      "lat": 21.080162,
+      "lon": 105.868446
+    },
+    "status": "cancelled",
+    "note": " | Tự động tắt bởi phần cứng: NORMAL event",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T01:14:41.059Z",
+    "updatedAt": "2025-11-26T01:15:04.290Z",
+    "assignedStationId": "S0032",
+    "assignedAt": "2025-11-26T01:14:41.069Z",
+    "assignmentExpiresAt": "2025-11-26T01:16:41.069Z"
+  },
+  {
+    "id": "SOS1764119783668",
+    "userId": "U0001",
+    "deviceId": "DHW_U0001",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 21.080168,
+      "lon": 105.868439
+    },
+    "status": "done",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T01:16:23.668Z",
+    "updatedAt": "2025-11-26T01:16:49.745Z",
+    "assignedStationId": "S0032"
+  },
+  {
+    "id": "SOS1764119834150",
+    "userId": "U0001",
+    "deviceId": "DHW_U0001",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 21.08017,
+      "lon": 105.868416
+    },
+    "status": "done",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T01:17:14.150Z",
+    "updatedAt": "2025-11-26T01:18:06.005Z",
+    "assignedStationId": "S0032"
+  },
+  {
+    "id": "SOS1764119892434",
+    "userId": "U0001",
+    "deviceId": "DHW_U0001",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 21.080149,
+      "lon": 105.868439
+    },
+    "status": "cancelled",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T01:18:12.434Z",
+    "updatedAt": "2025-11-26T01:18:43.534Z"
+  },
+  {
+    "id": "SOS1764119923710",
+    "userId": "U0001",
+    "deviceId": "DHW_U0001",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 21.080145,
+      "lon": 105.868446
+    },
+    "status": "cancelled",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T01:18:43.710Z",
+    "updatedAt": "2025-11-26T01:18:50.887Z"
+  },
+  {
+    "id": "SOS1764119978617",
+    "userId": "U0001",
+    "deviceId": "DHW_U0001",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 21.080139,
+      "lon": 105.868423
+    },
+    "status": "cancelled",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH",
+    "rejectedStationIds": [
+      "S0032"
+    ],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T01:19:38.617Z",
+    "updatedAt": "2025-11-26T01:21:28.388Z"
+  },
+  {
+    "id": "SOS1764120093860",
+    "userId": "U0001",
+    "deviceId": "DHW_U0001",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 21.080191,
+      "lon": 105.868408
+    },
+    "status": "cancelled",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH",
+    "rejectedStationIds": [
+      "S0032",
+      "S0031",
+      "S0038",
+      "S0040",
+      "S0035",
+      "S0033"
+    ],
+    "createdAt": "2025-11-26T01:21:33.860Z",
+    "updatedAt": "2025-11-26T01:34:32.805Z",
+    "readyStationIds": [
+      "S0032"
+    ]
+  },
+  {
+    "id": "SOS1764120904882",
+    "userId": "U0001",
+    "deviceId": "DHW_U0001",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 21.08012,
+      "lon": 105.868431
+    },
+    "status": "cancelled",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH",
+    "rejectedStationIds": [
+      "S0032",
+      "S0031",
+      "S0038",
+      "S0040"
+    ],
+    "createdAt": "2025-11-26T01:35:04.882Z",
+    "updatedAt": "2025-11-26T01:41:39.606Z",
+    "readyStationIds": [
+      "S0032"
+    ]
+  },
+  {
+    "id": "SOS1764121299716",
+    "userId": "U0001",
+    "deviceId": "DHW_U0001",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 21.080191,
+      "lon": 105.868423
+    },
+    "status": "cancelled",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T01:41:39.716Z",
+    "updatedAt": "2025-11-26T01:41:50.613Z"
+  },
+  {
+    "id": "SOS1764121322973",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "critical",
+    "location": {
+      "lat": 21.080181,
+      "lon": 105.868423
+    },
+    "status": "cancelled",
+    "note": " | Tự động tắt bởi phần cứng: NORMAL event",
+    "rejectedStationIds": [
+      "S0032"
+    ],
+    "readyStationIds": [
+      "S0032"
+    ],
+    "createdAt": "2025-11-26T01:42:02.973Z",
+    "updatedAt": "2025-11-26T01:42:37.657Z"
+  },
+  {
+    "id": "SOS1764121370395",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 21.080181,
+      "lon": 105.868423
+    },
+    "status": "cancelled",
+    "note": " | Tự động tắt bởi phần cứng: NORMAL event",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T01:42:50.395Z",
+    "updatedAt": "2025-11-26T01:42:59.467Z"
+  },
+  {
+    "id": "SOS1764121407206",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "medium",
+    "location": {
+      "lat": 21.080204,
+      "lon": 105.868416
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [
+      "S0032",
+      "S0031"
+    ],
+    "readyStationIds": [
+      "S0032"
+    ],
+    "createdAt": "2025-11-26T01:43:27.206Z",
+    "updatedAt": "2025-11-26T01:44:41.854Z"
+  },
+  {
+    "id": "SOS1764121599434",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "critical",
+    "location": {
+      "lat": 21.080204,
+      "lon": 105.868416
+    },
+    "status": "cancelled",
+    "note": "",
+    "rejectedStationIds": [
+      "S0032",
+      "S0031",
+      "S0038",
+      "S0040"
+    ],
+    "readyStationIds": [
+      "S0032",
+      "S0031"
+    ],
+    "createdAt": "2025-11-26T01:46:39.434Z",
+    "updatedAt": "2025-11-26T01:54:03.621Z"
+  },
+  {
+    "id": "SOS1764122055560",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "critical",
+    "location": {
+      "lat": 21.080204,
+      "lon": 105.868416
+    },
+    "status": "cancelled",
+    "note": " | Tự động tắt bởi phần cứng: NORMAL event",
+    "rejectedStationIds": [
+      "S0032",
+      "S0031"
+    ],
+    "readyStationIds": [
+      "S0031",
+      "S0032"
+    ],
+    "createdAt": "2025-11-26T01:54:15.560Z",
+    "updatedAt": "2025-11-26T01:55:48.203Z",
+    "assignedStationId": "S0038",
+    "assignedAt": "2025-11-26T01:55:02.371Z",
+    "assignmentExpiresAt": "2025-11-26T01:57:02.371Z"
+  },
+  {
+    "id": "SOS1764122177792",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "critical",
+    "location": {
+      "lat": 21.080175,
+      "lon": 105.868454
+    },
+    "status": "cancelled",
+    "note": " | Tự động tắt bởi phần cứng: NORMAL event",
+    "rejectedStationIds": [
+      "S0032",
+      "S0031"
+    ],
+    "readyStationIds": [
+      "S0032"
+    ],
+    "createdAt": "2025-11-26T01:56:17.792Z",
+    "updatedAt": "2025-11-26T01:56:37.809Z",
+    "assignedStationId": "S0038",
+    "assignedAt": "2025-11-26T01:56:37.746Z",
+    "assignmentExpiresAt": "2025-11-26T01:58:37.746Z"
+  },
+  {
+    "id": "SOS1764122239680",
+    "userId": "U0001",
+    "deviceId": "DHW_U0001",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 21.08021,
+      "lon": 105.868362
+    },
+    "status": "cancelled",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH",
+    "rejectedStationIds": [
+      "S0032",
+      "S0031",
+      "S0038",
+      "S0040",
+      "S0035",
+      "S0033",
+      "S0002"
+    ],
+    "createdAt": "2025-11-26T01:57:19.680Z",
+    "updatedAt": "2025-11-26T02:09:50.732Z"
+  },
+  {
+    "id": "SOS1764123025101",
+    "userId": "U0001",
+    "type": "accident",
+    "severity": "critical",
+    "location": {
+      "lat": 21.080215,
+      "lon": 105.868423
+    },
+    "status": "cancelled",
+    "note": " | Tự động tắt bởi phần cứng: NORMAL event",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T02:10:25.101Z",
+    "updatedAt": "2025-11-26T02:10:34.796Z",
+    "assignedStationId": "S0032",
+    "assignedAt": "2025-11-26T02:10:25.112Z",
+    "assignmentExpiresAt": "2025-11-26T02:12:25.112Z"
+  },
+  {
+    "id": "SOS1764123050042",
+    "userId": "U0001",
+    "deviceId": "DHW_U0001",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 21.08021,
+      "lon": 105.868401
+    },
+    "status": "cancelled",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH",
+    "rejectedStationIds": [
+      "S0032",
+      "S0031",
+      "S0038"
+    ],
+    "createdAt": "2025-11-26T02:10:50.042Z",
+    "updatedAt": "2025-11-26T02:14:44.200Z",
+    "readyStationIds": []
+  },
+  {
+    "id": "SOS1764123289000",
+    "userId": "U0001",
+    "deviceId": "DHW_U0001",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 21.080193,
+      "lon": 105.868401
+    },
+    "status": "cancelled",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH",
+    "rejectedStationIds": [
+      "S0032",
+      "S0038",
+      "S0031",
+      "S0040",
+      "S0035"
+    ],
+    "createdAt": "2025-11-26T02:14:49.000Z",
+    "updatedAt": "2025-11-26T02:18:37.395Z"
+  },
+  {
+    "id": "SOS1764123733838",
+    "userId": "U0001",
+    "deviceId": "DHW_U0001",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 21.080261,
+      "lon": 105.868393
+    },
+    "status": "done",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH",
+    "rejectedStationIds": [
+      "S0032",
+      "S0031",
+      "S0038",
+      "S0033",
+      "S0040"
+    ],
+    "createdAt": "2025-11-26T02:22:13.838Z",
+    "updatedAt": "2025-11-26T02:28:09.949Z",
+    "assignedStationId": "S0031"
+  },
+  {
+    "id": "SOS1764127760042",
+    "userId": "U0001",
+    "deviceId": "DHW_U0001",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 21.080185,
+      "lon": 105.868393
+    },
+    "status": "cancelled",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH | Tự động tắt bởi phần cứng: NORMAL event",
+    "rejectedStationIds": [
+      "S0032",
+      "S0031",
+      "S0038"
+    ],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T03:29:20.042Z",
+    "updatedAt": "2025-11-26T03:36:45.148Z",
+    "assignedStationId": "S0040",
+    "assignedAt": "2025-11-26T03:35:38.343Z",
+    "assignmentExpiresAt": "2025-11-26T03:37:38.343Z"
+  },
+  {
+    "id": "SOS1764129482635",
+    "userId": "U0001",
+    "deviceId": "DHW_U0001",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 21.080183,
+      "lon": 105.868309
+    },
+    "status": "cancelled",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH | Tự động tắt bởi phần cứng: NORMAL event",
+    "rejectedStationIds": [
+      "S0032"
+    ],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T03:58:02.635Z",
+    "updatedAt": "2025-11-26T04:01:56.196Z",
     "assignedStationId": "S0031",
-    "assignedAt": "2025-11-25T17:01:38.968Z",
-    "assignmentExpiresAt": "2025-11-25T17:03:38.968Z"
+    "assignedAt": "2025-11-26T04:00:09.760Z",
+    "assignmentExpiresAt": "2025-11-26T04:02:09.760Z"
+  },
+  {
+    "id": "SOS1764130494338",
+    "userId": "U0001",
+    "deviceId": "DHW_U0001",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 21.080093,
+      "lon": 105.868233
+    },
+    "status": "cancelled",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH | Tự động tắt bởi phần cứng: NORMAL event",
+    "rejectedStationIds": [
+      "S0032",
+      "S0031",
+      "S0038",
+      "S0040",
+      "S0035",
+      "S0033",
+      "S0002"
+    ],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T04:14:54.338Z",
+    "updatedAt": "2025-11-26T04:30:45.735Z",
+    "assignedStationId": "S0009",
+    "assignedAt": "2025-11-26T04:29:41.050Z",
+    "assignmentExpiresAt": "2025-11-26T04:31:41.050Z"
+  },
+  {
+    "id": "SOS1764134291775",
+    "userId": "U0003",
+    "deviceId": "DHW_U0003",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 0,
+      "lon": 0
+    },
+    "status": "cancelled",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH | Tự động tắt bởi phần cứng: NORMAL event",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T05:18:11.775Z",
+    "updatedAt": "2025-11-26T05:18:21.325Z",
+    "assignedStationId": "S0037",
+    "assignedAt": "2025-11-26T05:18:11.778Z",
+    "assignmentExpiresAt": "2025-11-26T05:20:11.778Z"
+  },
+  {
+    "id": "SOS1764135381651",
+    "userId": "U0001",
+    "deviceId": "DHW_U0001",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 21.080215,
+      "lon": 105.868385
+    },
+    "status": "cancelled",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH | Tự động tắt bởi phần cứng: NORMAL event",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T05:36:21.651Z",
+    "updatedAt": "2025-11-26T05:36:29.807Z",
+    "assignedStationId": "S0032",
+    "assignedAt": "2025-11-26T05:36:21.656Z",
+    "assignmentExpiresAt": "2025-11-26T05:38:21.656Z"
+  },
+  {
+    "id": "SOS1764135397705",
+    "userId": "U0001",
+    "deviceId": "DHW_U0001",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 21.08021,
+      "lon": 105.868385
+    },
+    "status": "cancelled",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH | Tự động tắt bởi phần cứng: NORMAL event",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T05:36:37.705Z",
+    "updatedAt": "2025-11-26T05:36:45.710Z",
+    "assignedStationId": "S0032",
+    "assignedAt": "2025-11-26T05:36:37.709Z",
+    "assignmentExpiresAt": "2025-11-26T05:38:37.709Z"
+  },
+  {
+    "id": "SOS1764142045851",
+    "userId": "U0008",
+    "deviceId": "DHW_U0008",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 0,
+      "lon": 0
+    },
+    "status": "done",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH",
+    "rejectedStationIds": [
+      "S0031",
+      "S0032"
+    ],
+    "createdAt": "2025-11-26T07:27:25.851Z",
+    "updatedAt": "2025-11-26T07:32:27.674Z",
+    "assignedStationId": "S0032"
+  },
+  {
+    "id": "SOS1764143734304",
+    "userId": "U0003",
+    "deviceId": "DHW_U0003",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 0,
+      "lon": 0
+    },
+    "status": "cancelled",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH | Tự động tắt bởi phần cứng: NORMAL event",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T07:55:34.304Z",
+    "updatedAt": "2025-11-26T07:55:49.691Z",
+    "assignedStationId": "S0031",
+    "assignedAt": "2025-11-26T07:55:34.308Z",
+    "assignmentExpiresAt": "2025-11-26T07:57:34.308Z"
+  },
+  {
+    "id": "SOS1764143738005",
+    "userId": "U0008",
+    "deviceId": "DHW_U0008",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 21.006845,
+      "lon": 105.798409
+    },
+    "status": "cancelled",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH | Tự động tắt bởi phần cứng: NORMAL event",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T07:55:38.005Z",
+    "updatedAt": "2025-11-26T07:55:46.911Z",
+    "assignedStationId": "S0031",
+    "assignedAt": "2025-11-26T07:55:38.008Z",
+    "assignmentExpiresAt": "2025-11-26T07:57:38.008Z"
+  },
+  {
+    "id": "SOS1764143757178",
+    "userId": "U0008",
+    "deviceId": "DHW_U0008",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 21.006802,
+      "lon": 105.798454
+    },
+    "status": "cancelled",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH | Tự động tắt bởi phần cứng: NORMAL event",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T07:55:57.179Z",
+    "updatedAt": "2025-11-26T07:56:07.452Z",
+    "assignedStationId": "S0031",
+    "assignedAt": "2025-11-26T07:55:57.182Z",
+    "assignmentExpiresAt": "2025-11-26T07:57:57.182Z"
+  },
+  {
+    "id": "SOS1764144213388",
+    "userId": "U0003",
+    "deviceId": "DHW_U0003",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 0,
+      "lon": 0
+    },
+    "status": "cancelled",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH | Tự động tắt bởi phần cứng: NORMAL event",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T08:03:33.388Z",
+    "updatedAt": "2025-11-26T08:03:46.254Z",
+    "assignedStationId": "S0031",
+    "assignedAt": "2025-11-26T08:03:33.392Z",
+    "assignmentExpiresAt": "2025-11-26T08:05:33.392Z"
+  },
+  {
+    "id": "SOS1764144232285",
+    "userId": "U0003",
+    "deviceId": "DHW_U0003",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 0,
+      "lon": 0
+    },
+    "status": "cancelled",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH | Tự động tắt bởi phần cứng: NORMAL event",
+    "rejectedStationIds": [
+      "S0031",
+      "S0032"
+    ],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T08:03:52.285Z",
+    "updatedAt": "2025-11-26T08:25:07.811Z"
+  },
+  {
+    "id": "SOS1764145829559",
+    "userId": "U0003",
+    "deviceId": "DHW_U0003",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 0,
+      "lon": 0
+    },
+    "status": "cancelled",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH | Tự động tắt bởi phần cứng: NORMAL event",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T08:30:29.559Z",
+    "updatedAt": "2025-11-26T08:30:39.932Z",
+    "assignedStationId": "S0031",
+    "assignedAt": "2025-11-26T08:30:29.563Z",
+    "assignmentExpiresAt": "2025-11-26T08:32:29.563Z"
+  },
+  {
+    "id": "SOS1764145849754",
+    "userId": "U0003",
+    "deviceId": "DHW_U0003",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 0,
+      "lon": 0
+    },
+    "status": "cancelled",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH | Tự động tắt bởi phần cứng: NORMAL event",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T08:30:49.754Z",
+    "updatedAt": "2025-11-26T08:30:55.440Z",
+    "assignedStationId": "S0031",
+    "assignedAt": "2025-11-26T08:30:49.757Z",
+    "assignmentExpiresAt": "2025-11-26T08:32:49.757Z"
+  },
+  {
+    "id": "SOS1764147166034",
+    "userId": "U0008",
+    "type": "breakdown",
+    "severity": "medium",
+    "location": {
+      "lat": 21.009951,
+      "lon": 105.796692
+    },
+    "status": "pending",
+    "note": "",
+    "rejectedStationIds": [
+      "S0033",
+      "S0034"
+    ],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T08:52:46.034Z",
+    "updatedAt": "2025-11-26T08:57:01.458Z"
+  },
+  {
+    "id": "SOS1764150796675",
+    "userId": "U0003",
+    "deviceId": "DHW_U0003",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 0,
+      "lon": 0
+    },
+    "status": "cancelled",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH | Tự động tắt bởi phần cứng: NORMAL event",
+    "rejectedStationIds": [
+      "S0031",
+      "S0032"
+    ],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T09:53:16.675Z",
+    "updatedAt": "2025-11-26T10:07:55.349Z"
+  },
+  {
+    "id": "SOS1764153212433",
+    "userId": "U0003",
+    "deviceId": "DHW_U0003",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 21.097099,
+      "lon": 105.867889
+    },
+    "status": "cancelled",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH | Tự động tắt bởi phần cứng: NORMAL event",
+    "rejectedStationIds": [],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T10:33:32.433Z",
+    "updatedAt": "2025-11-26T10:33:38.613Z",
+    "assignedStationId": "S0032",
+    "assignedAt": "2025-11-26T10:33:32.436Z",
+    "assignmentExpiresAt": "2025-11-26T10:35:32.436Z"
+  },
+  {
+    "id": "SOS1764153336315",
+    "userId": "U0003",
+    "deviceId": "DHW_U0003",
+    "type": "accident",
+    "severity": "high",
+    "location": {
+      "lat": 21.096966,
+      "lon": 105.868073
+    },
+    "status": "pending",
+    "note": "Tự động tạo từ phần cứng: CRASH - HIGH",
+    "rejectedStationIds": [
+      "S0032",
+      "S0031"
+    ],
+    "readyStationIds": [],
+    "createdAt": "2025-11-26T10:35:36.315Z",
+    "updatedAt": "2025-11-26T10:39:45.881Z"
   }
 ]

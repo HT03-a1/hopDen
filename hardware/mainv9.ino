@@ -13,6 +13,7 @@
 #include <WiFi.h>
 #include <WebServer.h>
 #include <EEPROM.h>
+#include "RTClib.h"
 
 // Select your modem
 #define TINY_GSM_MODEM_SIM7600
@@ -109,11 +110,11 @@ unsigned long sosCancelTime = 0;       // Thời gian hủy SOS
 #define DHT_PIN 35      // GPIO 35
 #define DHT_TYPE DHT11  // Loại cảm biến
 
-// DS1307 RTC (Real Time Clock)
-#define DS1307_ADDR_1 0x50  // Địa chỉ I2C có thể
-#define DS1307_ADDR_2 0x68  // Địa chỉ I2C mặc định của DS1307
-uint8_t DS1307_ADDR = DS1307_ADDR_2;  // Sẽ tự động phát hiện
-#define DS1307_TIME_REG 0x00  // Register bắt đầu đọc thời gian
+// DS1307 RTC (Real Time Clock) - Sử dụng RTClib
+// Chỉnh SDA/SCL theo ESP32-S3 của bạn
+#define I2C_SDA 8
+#define I2C_SCL 9
+RTC_DS1307 rtc;
 
 // ============================================
 // MPU9250 REGISTERS
@@ -403,29 +404,20 @@ bool readAccelGyro(float &ax, float &ay, float &az, float &gx, float &gy, float 
 }
 
 bool initMPU9250() {
-  Wire.begin();
+  // Wire.begin() đã được gọi trong setup() với I2C_SDA và I2C_SCL
   delay(100);
   
   // Tự động phát hiện địa chỉ I2C (thử cả 0x68 và 0x69)
-  Serial.println("Đang tìm MPU9250...");
   uint8_t whoami1 = readRegister(MPU9250_ADDR_1, MPU9250_WHO_AM_I);
   uint8_t whoami2 = readRegister(MPU9250_ADDR_2, MPU9250_WHO_AM_I);
   
-  Serial.print("WHO_AM_I tại 0x68: 0x");
-  Serial.println(whoami1, HEX);
-  Serial.print("WHO_AM_I tại 0x69: 0x");
-  Serial.println(whoami2, HEX);
   
   // MPU9250 có thể trả về 0x71 hoặc 0x70 (tùy version)
   if (whoami1 == 0x71 || whoami1 == 0x70) {
     MPU9250_ADDR = MPU9250_ADDR_1;
-    Serial.println("✓ Tìm thấy MPU9250 tại địa chỉ 0x68");
   } else if (whoami2 == 0x71 || whoami2 == 0x70) {
     MPU9250_ADDR = MPU9250_ADDR_2;
-    Serial.println("✓ Tìm thấy MPU9250 tại địa chỉ 0x69");
   } else {
-    Serial.println("✗ Không tìm thấy MPU9250!");
-    Serial.println("Kiểm tra kết nối I2C (SDA, SCL)");
     return false;
   }
   
@@ -451,10 +443,7 @@ bool initMPU9250() {
   
   // Kiểm tra lại sau khi cấu hình
   uint8_t whoami_final = readRegister(MPU9250_WHO_AM_I);
-  Serial.print("WHO_AM_I sau cấu hình: 0x");
-  Serial.println(whoami_final, HEX);
   
-  Serial.println("✓ MPU9250 đã được khởi tạo thành công!");
   return true;
 }
 
@@ -591,89 +580,38 @@ void updateBuzzer() {
 }
 
 // ============================================
-// HÀM ĐỌC DS1307 RTC
+// HÀM ĐỌC DS1307 RTC - Sử dụng RTClib
 // ============================================
-uint8_t bcdToDec(uint8_t bcd) {
-  return ((bcd / 16) * 10) + (bcd % 16);
-}
-
-uint8_t decToBcd(uint8_t dec) {
-  return ((dec / 10) * 16) + (dec % 10);
-}
-
-bool readDS1307Register(uint8_t addr, uint8_t reg, uint8_t &value) {
-  Wire.beginTransmission(addr);
-  Wire.write(reg);
-  uint8_t error = Wire.endTransmission(false);
-  if (error != 0) {
+bool initDS1307() {
+  
+  if (!rtc.begin()) {
     return false;
   }
-  uint8_t bytesRead = Wire.requestFrom(addr, (uint8_t)1);
-  if (bytesRead != 1) {
-    return false;
+  
+  // Nếu RTC chưa chạy thì cài giờ theo thời gian máy tính
+  if (!rtc.isrunning()) {
+    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
   }
-  value = Wire.read();
+  
   return true;
 }
 
-bool initDS1307() {
-  // Thử cả hai địa chỉ
-  uint8_t testAddr1 = DS1307_ADDR_1;
-  uint8_t testAddr2 = DS1307_ADDR_2;
-  
-  // Kiểm tra địa chỉ 0x68 trước (địa chỉ mặc định)
-  uint8_t testValue;
-  if (readDS1307Register(testAddr2, 0x00, testValue)) {
-    DS1307_ADDR = testAddr2;
-    Serial.print("✓ DS1307 tìm thấy tại địa chỉ 0x");
-    Serial.println(testAddr2, HEX);
-    return true;
-  }
-  
-  // Thử địa chỉ 0x50
-  if (readDS1307Register(testAddr1, 0x00, testValue)) {
-    DS1307_ADDR = testAddr1;
-    Serial.print("✓ DS1307 tìm thấy tại địa chỉ 0x");
-    Serial.println(testAddr1, HEX);
-    return true;
-  }
-  
-  Serial.println("✗ Không tìm thấy DS1307!");
-  return false;
-}
-
 bool readDS1307Time() {
-  Wire.beginTransmission(DS1307_ADDR);
-  Wire.write(DS1307_TIME_REG);
-  uint8_t error = Wire.endTransmission(false);
-  if (error != 0) {
+  if (!ds1307Initialized) {
     rtcData.valid = false;
     return false;
   }
   
-  uint8_t bytesRead = Wire.requestFrom(DS1307_ADDR, (uint8_t)7);
-  if (bytesRead != 7) {
-    rtcData.valid = false;
-    return false;
-  }
+  DateTime now = rtc.now();
   
-  // Đọc 7 bytes: second, minute, hour, dayOfWeek, day, month, year
-  uint8_t second = Wire.read();
-  uint8_t minute = Wire.read();
-  uint8_t hour = Wire.read();
-  uint8_t dayOfWeek = Wire.read();
-  uint8_t day = Wire.read();
-  uint8_t month = Wire.read();
-  uint8_t year = Wire.read();
-  
-  // Chuyển từ BCD sang decimal
-  rtcData.second = bcdToDec(second & 0x7F);  // Bit 7 là CH (Clock Halt)
-  rtcData.minute = bcdToDec(minute & 0x7F);
-  rtcData.hour = bcdToDec(hour & 0x3F);       // Bit 6 là 12/24 hour mode
-  rtcData.dayOfWeek = bcdToDec(dayOfWeek & 0x07);
-  rtcData.day = bcdToDec(day & 0x3F);
-  rtcData.month = bcdToDec(month & 0x1F);
-  rtcData.year = bcdToDec(year);
+  // Cập nhật struct RTCData từ DateTime
+  rtcData.second = now.second();
+  rtcData.minute = now.minute();
+  rtcData.hour = now.hour();
+  rtcData.dayOfWeek = now.dayOfTheWeek() + 1;  // RTClib: 0=Sunday, chuyển sang 1=Sunday
+  rtcData.day = now.day();
+  rtcData.month = now.month();
+  rtcData.year = now.year() % 100;  // Chỉ lấy 2 số cuối (00-99)
   
   rtcData.valid = true;
   return true;
@@ -681,17 +619,18 @@ bool readDS1307Time() {
 
 String getRTCTimeString() {
   if (!rtcData.valid) {
-    return "00:00:00";
+    return "00:00";
   }
-  char timeStr[10];
-  sprintf(timeStr, "%02d:%02d:%02d", rtcData.hour, rtcData.minute, rtcData.second);
+  char timeStr[6];
+  sprintf(timeStr, "%02d:%02d", rtcData.hour, rtcData.minute);
   return String(timeStr);
 }
 
 String getRTCDateString() {
   if (!rtcData.valid) {
-    return "01/01/00";
+    return "01/01/24";
   }
+  // Format: ngày/tháng/năm (2 số cuối)
   char dateStr[9];
   sprintf(dateStr, "%02d/%02d/%02d", rtcData.day, rtcData.month, rtcData.year);
   return String(dateStr);
@@ -699,12 +638,13 @@ String getRTCDateString() {
 
 String getRTCDateTimeString() {
   if (!rtcData.valid) {
-    return "00/00/00 00:00:00";
+    return "01/01/24 00:00";
   }
-  char datetimeStr[20];
-  sprintf(datetimeStr, "%02d/%02d/%02d %02d:%02d:%02d", 
+  // Format: ngày/tháng/năm giờ:phút (viết tắt)
+  char datetimeStr[15];
+  sprintf(datetimeStr, "%02d/%02d/%02d %02d:%02d", 
           rtcData.day, rtcData.month, rtcData.year,
-          rtcData.hour, rtcData.minute, rtcData.second);
+          rtcData.hour, rtcData.minute);
   return String(datetimeStr);
 }
 
@@ -773,9 +713,13 @@ void nextScreen() {
 void displayScreen1_Info() {
   u8g2.clearBuffer();
   
-  // Tiêu đề
+  // Tiêu đề - Căn giữa
   u8g2.setFont(u8g2_font_ncenB08_tr);
-  u8g2.drawStr(0, 10, "=== THONG TIN ===");
+  const char* title = "=== THONG TIN ===";
+  int titleWidth = strlen(title) * 7;  // Font ncenB08 khoảng 7 pixel/ký tự
+  int titleX = (128 - titleWidth) / 2;
+  if (titleX < 0) titleX = 0;
+  u8g2.drawStr(titleX, 10, title);
   
   // Định vị GPS
   u8g2.setFont(u8g2_font_6x10_tr);
@@ -800,24 +744,25 @@ void displayScreen1_Info() {
     u8g2.drawStr(70, 34, "NORMAL");
   }
   
-  // Thời gian
-  u8g2.drawStr(0, 46, "Time:");
-  if (rtcData.valid) {
-    char timeStr[12];
-    snprintf(timeStr, sizeof(timeStr), "%02d:%02d:%02d", rtcData.hour, rtcData.minute, rtcData.second);
-    u8g2.drawStr(35, 46, timeStr);
-  } else {
-    u8g2.drawStr(35, 46, "N/A");
-  }
-  
   // Nhiệt độ và độ ẩm
-  u8g2.drawStr(0, 58, "T/H:");
+  u8g2.drawStr(0, 46, "T/H:");
   if (dhtData.valid) {
     char tempHumStr[20];
-    snprintf(tempHumStr, sizeof(tempHumStr), "%.1fC %.1f%%", dhtData.temperature, dhtData.humidity);
-    u8g2.drawStr(30, 58, tempHumStr);
+    snprintf(tempHumStr, sizeof(tempHumStr), "%.1fC - %.1f%%", dhtData.temperature, dhtData.humidity);
+    u8g2.drawStr(30, 46, tempHumStr);
   } else {
-    u8g2.drawStr(30, 58, "N/A");
+    u8g2.drawStr(30, 46, "N/A");
+  }
+  
+  // Thời gian và ngày tháng gộp lại (giờ:phút ngày/tháng/năm) - Căn lề trái, dưới cùng
+  if (rtcData.valid) {
+    char datetimeStr[22];  // Tăng từ 15 lên 18 để đủ chỗ: "10:20 26/11/25" = 14 ký tự + null terminator
+    snprintf(datetimeStr, sizeof(datetimeStr), "---%02d:%02d  %02d/%02d/%02d---", 
+             rtcData.hour, rtcData.minute, 
+             rtcData.day, rtcData.month, rtcData.year);
+    u8g2.drawStr(0, 58, datetimeStr);
+  } else {
+    u8g2.drawStr(0, 58, "N/A");
   }
   
   u8g2.sendBuffer();
@@ -826,30 +771,46 @@ void displayScreen1_Info() {
 void displayScreen2_Sensors() {
   u8g2.clearBuffer();
   
-  // Tiêu đề
+  // Tiêu đề - Căn giữa
   u8g2.setFont(u8g2_font_ncenB08_tr);
-  u8g2.drawStr(0, 10, "=== CAM BIEN ===");
+  const char* title = "=== CAM BIEN ===";
+  int titleWidth = strlen(title) * 7;
+  int titleX = (128 - titleWidth) / 2;
+  if (titleX < 0) titleX = 0;
+  u8g2.drawStr(titleX, 10, title);
   
-  // Ax, Ay, Az
+  // Ax, Ay, Az - Căn giữa
   u8g2.setFont(u8g2_font_6x10_tr);
   char accelStr[30];
   snprintf(accelStr, sizeof(accelStr), "A:%.2f %.2f %.2f", imuData.ax, imuData.ay, imuData.az);
-  u8g2.drawStr(0, 24, accelStr);
+  int accelWidth = strlen(accelStr) * 6;
+  int accelX = (128 - accelWidth) / 2;
+  if (accelX < 0) accelX = 0;
+  u8g2.drawStr(accelX, 24, accelStr);
   
-  // Roll, Pitch
+  // Roll, Pitch - Căn giữa
   char angleStr[25];
   snprintf(angleStr, sizeof(angleStr), "R:%.1f P:%.1f", imuData.roll, imuData.pitch);
-  u8g2.drawStr(0, 38, angleStr);
+  int angleWidth = strlen(angleStr) * 6;
+  int angleX = (128 - angleWidth) / 2;
+  if (angleX < 0) angleX = 0;
+  u8g2.drawStr(angleX, 38, angleStr);
   
-  // G-force
+  // G-force - Căn giữa
   char gforceStr[20];
   snprintf(gforceStr, sizeof(gforceStr), "G:%.2f g", imuData.g_total);
-  u8g2.drawStr(0, 52, gforceStr);
+  int gforceWidth = strlen(gforceStr) * 6;
+  int gforceX = (128 - gforceWidth) / 2;
+  if (gforceX < 0) gforceX = 0;
+  u8g2.drawStr(gforceX, 52, gforceStr);
   
-  // Delta Angle
+  // Delta Angle - Căn giữa
   char deltaStr[20];
   snprintf(deltaStr, sizeof(deltaStr), "D:%.1f deg", imuData.deltaAngle);
-  u8g2.drawStr(0, 64, deltaStr);
+  int deltaWidth = strlen(deltaStr) * 6;
+  int deltaX = (128 - deltaWidth) / 2;
+  if (deltaX < 0) deltaX = 0;
+  u8g2.drawStr(deltaX, 64, deltaStr);
   
   u8g2.sendBuffer();
 }
@@ -857,42 +818,56 @@ void displayScreen2_Sensors() {
 void displayScreen3_Status() {
   u8g2.clearBuffer();
   
-  // Tiêu đề
+  // Tiêu đề - Căn giữa
   u8g2.setFont(u8g2_font_ncenB08_tr);
-  u8g2.drawStr(0, 10, "=== TRANG THAI ===");
+  const char* title = "=== TRANG THAI ===";
+  int titleWidth = strlen(title) * 7;
+  int titleX = (128 - titleWidth) / 2;
+  if (titleX < 0) titleX = 0;
+  u8g2.drawStr(titleX, 10, title);
   
   u8g2.setFont(u8g2_font_6x10_tr);
   
-  // Thẻ SD
-  u8g2.drawStr(0, 24, "SD Card:");
-  if (sdCardInitialized) {
-    u8g2.drawStr(60, 24, "OK");
-  } else {
-    u8g2.drawStr(60, 24, "NO");
-  }
+  // Thẻ SD - Căn giữa
+  char sdStr[20];
+  snprintf(sdStr, sizeof(sdStr), "SD Card: %s", sdCardInitialized ? "OK" : "NO");
+  int sdWidth = strlen(sdStr) * 6;
+  int sdX = (128 - sdWidth) / 2;
+  if (sdX < 0) sdX = 0;
+  u8g2.drawStr(sdX, 24, sdStr);
   
-  // SIM 4G
-  u8g2.drawStr(0, 38, "SIM 4G:");
+  // SIM và 4G - Căn giữa
+  char simStr[30];
+  // Kiểm tra trạng thái SIM
+  const char* simStatus = sim4gInitialized ? "OK" : "NO";
+  // Kiểm tra trạng thái 4G/GPRS
+  bool has4G = false;
   if (sim4gInitialized) {
-    if (modem.isNetworkConnected()) {
-      u8g2.drawStr(60, 38, "OK");
-    } else {
-      u8g2.drawStr(60, 38, "NO NET");
-    }
-  } else {
-    u8g2.drawStr(60, 38, "NO");
+    // Kiểm tra cả sim4gNetworkOpen và modem.isGprsConnected()
+    has4G = sim4gNetworkOpen || (modem.isGprsConnected() && modem.isNetworkConnected());
   }
+  const char* g4Status = has4G ? "OK" : "NO";
+  snprintf(simStr, sizeof(simStr), "Sim:%s | 4G:%s", simStatus, g4Status);
+  int simWidth = strlen(simStr) * 6;
+  int simX = (128 - simWidth) / 2;
+  if (simX < 0) simX = 0;
+  u8g2.drawStr(simX, 38, simStr);
   
-  // Ngưỡng cảnh báo (dùng biến động)
-  u8g2.drawStr(0, 52, "G_CRASH:");
-  char thresholdStr[15];
-  snprintf(thresholdStr, sizeof(thresholdStr), "%.1fg", gCrashThreshold);
-  u8g2.drawStr(60, 52, thresholdStr);
+  // Ngưỡng cảnh báo - Căn giữa
+  char thresholdStr[20];
+  snprintf(thresholdStr, sizeof(thresholdStr), "G_CRASH: %.1fg", gCrashThreshold);
+  int thresholdWidth = strlen(thresholdStr) * 6;
+  int thresholdX = (128 - thresholdWidth) / 2;
+  if (thresholdX < 0) thresholdX = 0;
+  u8g2.drawStr(thresholdX, 52, thresholdStr);
   
-  u8g2.drawStr(0, 64, "ANGLE:");
-  char angleThresholdStr[15];
-  snprintf(angleThresholdStr, sizeof(angleThresholdStr), "%.0f deg", angleCrashThreshold);
-  u8g2.drawStr(60, 64, angleThresholdStr);
+  // Góc nghiêng - Căn giữa
+  char angleThresholdStr[20];
+  snprintf(angleThresholdStr, sizeof(angleThresholdStr), "ANGLE: %.0f deg", angleCrashThreshold);
+  int angleThresholdWidth = strlen(angleThresholdStr) * 6;
+  int angleThresholdX = (128 - angleThresholdWidth) / 2;
+  if (angleThresholdX < 0) angleThresholdX = 0;
+  u8g2.drawStr(angleThresholdX, 64, angleThresholdStr);
   
   u8g2.sendBuffer();
 }
@@ -900,44 +875,75 @@ void displayScreen3_Status() {
 void displayScreen4_GPS() {
   u8g2.clearBuffer();
   
-  // Tiêu đề
+  // Tiêu đề - Căn giữa
   u8g2.setFont(u8g2_font_ncenB08_tr);
-  u8g2.drawStr(0, 10, "=== GPS CHI TIET ===");
+  const char* title = "=== GPS CHI TIET ===";
+  int titleWidth = strlen(title) * 7;
+  int titleX = (128 - titleWidth) / 2;
+  if (titleX < 0) titleX = 0;
+  u8g2.drawStr(titleX, 10, title);
   
   u8g2.setFont(u8g2_font_6x10_tr);
   
   if (gpsData.valid) {
-    // Vận tốc
+    // Vận tốc - Căn giữa
     char speedStr[20];
     snprintf(speedStr, sizeof(speedStr), "Speed: %.1f km/h", gpsData.speed);
-    u8g2.drawStr(0, 24, speedStr);
+    int speedWidth = strlen(speedStr) * 6;
+    int speedX = (128 - speedWidth) / 2;
+    if (speedX < 0) speedX = 0;
+    u8g2.drawStr(speedX, 24, speedStr);
     
-    // Số vệ tinh
+    // Số vệ tinh - Căn giữa
     char satStr[20];
     snprintf(satStr, sizeof(satStr), "Sat: %d", gpsData.satellites);
-    u8g2.drawStr(0, 38, satStr);
+    int satWidth = strlen(satStr) * 6;
+    int satX = (128 - satWidth) / 2;
+    if (satX < 0) satX = 0;
+    u8g2.drawStr(satX, 38, satStr);
     
-    // HDOP (Độ chính xác)
+    // HDOP (Độ chính xác) - Căn giữa
     char hdopStr[25];
     if (gpsData.hdop < 99.0) {
       snprintf(hdopStr, sizeof(hdopStr), "HDOP: %.2f", gpsData.hdop);
     } else {
       snprintf(hdopStr, sizeof(hdopStr), "HDOP: N/A");
     }
-    u8g2.drawStr(0, 52, hdopStr);
+    int hdopWidth = strlen(hdopStr) * 6;
+    int hdopX = (128 - hdopWidth) / 2;
+    if (hdopX < 0) hdopX = 0;
+    u8g2.drawStr(hdopX, 52, hdopStr);
     
-    // Hướng di chuyển
+    // Hướng di chuyển - Căn giữa
+    char courseStr[20];
     if (gpsData.course > 0) {
-      char courseStr[20];
       snprintf(courseStr, sizeof(courseStr), "Course: %.0f deg", gpsData.course);
-      u8g2.drawStr(0, 64, courseStr);
     } else {
-      u8g2.drawStr(0, 64, "Course: N/A");
+      snprintf(courseStr, sizeof(courseStr), "Course: N/A");
     }
+    int courseWidth = strlen(courseStr) * 6;
+    int courseX = (128 - courseWidth) / 2;
+    if (courseX < 0) courseX = 0;
+    u8g2.drawStr(courseX, 64, courseStr);
   } else {
-    u8g2.drawStr(0, 30, "NO GPS SIGNAL");
-    u8g2.drawStr(0, 44, "Waiting for");
-    u8g2.drawStr(0, 58, "satellites...");
+    // NO GPS SIGNAL - Căn giữa
+    const char* noSignal = "NO GPS SIGNAL";
+    int noSignalWidth = strlen(noSignal) * 6;
+    int noSignalX = (128 - noSignalWidth) / 2;
+    if (noSignalX < 0) noSignalX = 0;
+    u8g2.drawStr(noSignalX, 30, noSignal);
+    
+    const char* waiting = "Waiting for";
+    int waitingWidth = strlen(waiting) * 6;
+    int waitingX = (128 - waitingWidth) / 2;
+    if (waitingX < 0) waitingX = 0;
+    u8g2.drawStr(waitingX, 44, waiting);
+    
+    const char* satellites = "satellites...";
+    int satellitesWidth = strlen(satellites) * 6;
+    int satellitesX = (128 - satellitesWidth) / 2;
+    if (satellitesX < 0) satellitesX = 0;
+    u8g2.drawStr(satellitesX, 58, satellites);
   }
   
   u8g2.sendBuffer();
@@ -1189,85 +1195,60 @@ void updateDHT() {
 // HÀM KHỞI TẠO SIM 4G
 // ============================================
 void initSIMModule() {
-  Serial.println("\n[INIT] Initializing SIM 4G module with TinyGSM...");
   
   // Khởi tạo Serial cho SIM 4G
   SerialSIM.begin(SIM_BAUD, SERIAL_8N1, SIM_RX_PIN, SIM_TX_PIN);
   delay(2000);
   
   // Reset modem
-  Serial.println("Modem Reset, Please Wait");
   SerialSIM.println("AT+CRESET");
   delay(2000);
   SerialSIM.flush();
   
   // Echo off
-  Serial.println("Echo Off");
   SerialSIM.println("ATE0");
   delay(1000);
   String rxString = SerialSIM.readString();
-  Serial.print("Got: ");
-  Serial.println(rxString);
   
   // Kiểm tra SIM card
-  Serial.println("[INFO] SIM card check");
   SerialSIM.println("AT+CPIN?");
   delay(1000);
   rxString = SerialSIM.readString();
-  Serial.print("Got: ");
-  Serial.println(rxString);
   
   // Lấy tên modem
   String name = modem.getModemName();
   delay(500);
-  Serial.println("Modem Name: " + name);
   
   // Chờ mạng
-  Serial.print("[INFO] Waiting for network...");
   if (!modem.waitForNetwork()) {
-    Serial.println(" fail");
     delay(1000);
     return;
   }
-  Serial.println(" success");
   
   if (modem.isNetworkConnected()) {
-    Serial.println("[OK] Network connected");
   }
   
   // Kết nối GPRS (cần cho một số chức năng)
-  Serial.print(F("[INFO] Connecting to "));
-  Serial.print(apn);
   if (!modem.gprsConnect(apn, user, pass)) {
-    Serial.println(" fail");
     delay(1000);
     // Vẫn tiếp tục dù GPRS fail (SMS và Call không cần GPRS)
   } else {
-    Serial.println(" success");
     if (modem.isGprsConnected()) {
-      Serial.println("[OK] GPRS connected");
       sim4gNetworkOpen = true;
     }
   }
   
   // Cấu hình SMS text mode
-  Serial.println("[INFO] Configuring SMS text mode...");
   SerialSIM.println("AT+CMGF=1");
   delay(1000);
   rxString = SerialSIM.readString();
-  Serial.print("Got: ");
-  Serial.println(rxString);
   
   // Kiểm tra tín hiệu mạng
-  Serial.println("[INFO] Checking signal strength...");
   SerialSIM.println("AT+CSQ");
   delay(1000);
   rxString = SerialSIM.readString();
-  Serial.print("Signal: ");
-  Serial.println(rxString);
   
   sim4gInitialized = true;
-  Serial.println("[OK] SIM 4G initialized successfully");
 }
 
 // ============================================
@@ -1275,19 +1256,14 @@ void initSIMModule() {
 // ============================================
 bool sendRealSMS(String phoneNumber, String message) {
   if (!sim4gInitialized) {
-    Serial.println("[ERROR] SIM 4G not initialized!");
     return false;
   }
   
-  Serial.println("\n[SMS] Preparing to send SMS...");
-  Serial.printf("[SMS] To: %s\n", phoneNumber.c_str());
-  Serial.println("[SMS] Message: " + message);
   
   if (message.length() > 160) {
     message = message.substring(0, 160);
   }
   
-  Serial.println("[SMS] Sending...");
   
   // Gửi lệnh AT để gửi SMS
   SerialSIM.print("AT+CMGS=\"");
@@ -1318,18 +1294,13 @@ bool sendRealSMS(String phoneNumber, String message) {
     delay(10);
   }
   
-  Serial.print("[SMS] Response: ");
-  Serial.println(response);
   
   // Kiểm tra response
   if (response.indexOf("+CMS ERROR") != -1) {
-    Serial.println("[ERROR] SMS sending failed!");
     return false;
   } else if (response.indexOf("+CMGS:") != -1 && response.indexOf("OK") != -1) {
-    Serial.println("[SUCCESS] SMS sent successfully!");
     return true;
   } else {
-    Serial.println("[ERROR] SMS sending failed! No valid response.");
     return false;
   }
 }
@@ -1339,13 +1310,9 @@ bool sendRealSMS(String phoneNumber, String message) {
 // ============================================
 bool makeRealCall(String phoneNumber) {
   if (!sim4gInitialized) {
-    Serial.println("[ERROR] SIM 4G not initialized!");
     return false;
   }
   
-  Serial.println("\n[CALL] Preparing to make a call...");
-  Serial.printf("[CALL] To: %s\n", phoneNumber.c_str());
-  Serial.println("[CALL] Dialing...");
   
   // Gửi lệnh AT để gọi điện
   SerialSIM.print("ATD");
@@ -1355,20 +1322,14 @@ bool makeRealCall(String phoneNumber) {
   
   // Đọc phản hồi
   String response = SerialSIM.readString();
-  Serial.print("[CALL] Response: ");
-  Serial.println(response);
   
   if (response.indexOf("OK") != -1 || response.indexOf("CONNECT") != -1) {
-    Serial.println("[SUCCESS] Call initiated!");
     return true;
   } else if (response.indexOf("BUSY") != -1) {
-    Serial.println("[WARNING] Number is busy!");
     return false;
   } else if (response.indexOf("NO ANSWER") != -1) {
-    Serial.println("[WARNING] No answer!");
     return false;
   } else {
-    Serial.println("[INFO] Call status unknown.");
     return false;
   }
 }
@@ -1380,17 +1341,38 @@ void markTelemetryForImmediateSend() {
   telemetryPendingImmediateSend = true;
 }
 
-String determineCrashSeverity(bool isManual, float gForce) {
+String determineCrashSeverity(bool isManual, float gForce, float deltaAngle) {
   if (isManual) {
-    return "HIGH";
+    return "HIGH";  // SOS thủ công → HIGH
   }
+  
+  // Tính ngưỡng CRITICAL: gCrashThreshold + 1.5 (từ EEPROM)
+  float criticalThreshold = gCrashThreshold + 1.5;
+  
+  // Điều kiện 1: G-Force >= 6.0g → CRITICAL (va chạm rất mạnh)
   if (gForce >= 6.0) {
     return "CRITICAL";
   }
-  if (gForce >= gCrashThreshold) {
-    return "HIGH";
+  
+  // Điều kiện 2: G-Force >= (gCrashThreshold + 1.5) nhưng < 6.0g
+  // VÀ Delta Angle > angleCrashThreshold → CRITICAL
+  // (Nếu criticalThreshold >= 6 thì chỉ xét điều kiện trên)
+  if (criticalThreshold < 6.0 && gForce >= criticalThreshold) {
+    if (deltaAngle > angleCrashThreshold) {
+      return "CRITICAL";
+    }
   }
-  return "NORMAL";
+  
+  // G-Force >= gCrashThreshold (từ EEPROM) nhưng < (gCrashThreshold + 1.5)
+  // VÀ Delta Angle > angleCrashThreshold → HIGH
+  if (gForce >= gCrashThreshold && gForce < criticalThreshold) {
+    if (deltaAngle > angleCrashThreshold) {
+      return "HIGH";
+    }
+  }
+  
+  // Trường hợp còn lại (không bao giờ xảy ra nếu đã phát hiện CRASH)
+  return "HIGH";  // Mặc định HIGH để đảm bảo an toàn
 }
 
 String buildTelemetryPayload(const String& eventType, const String& severity) {
@@ -1417,20 +1399,17 @@ String buildTelemetryPayload(const String& eventType, const String& severity) {
 bool ensureNetworkReady(bool verbose = true) {
   if (!sim4gInitialized) {
     if (verbose) {
-      Serial.println("[NET] ⚠️ SIM module chưa khởi tạo, thử khởi tạo lại...");
     }
     initSIMModule();
   }
 
   bool networkConnected = modem.isNetworkConnected();
   if (!networkConnected) {
-    if (verbose) Serial.println("[NET] 📶 Đang đợi mạng...");
     networkConnected = modem.waitForNetwork(60000);
   }
 
   bool gprsConnected = modem.isGprsConnected();
   if (networkConnected && !gprsConnected) {
-    if (verbose) Serial.println("[NET] 🌐 Đang kết nối GPRS...");
     modem.gprsDisconnect();
     gprsConnected = modem.gprsConnect(apn, user, pass);
   }
@@ -1438,7 +1417,6 @@ bool ensureNetworkReady(bool verbose = true) {
   sim4gNetworkOpen = networkConnected && gprsConnected;
 
   if (!sim4gNetworkOpen && verbose) {
-    Serial.println("[NET] ❌ Không thể mở kết nối GPRS");
   }
 
   return sim4gNetworkOpen;
@@ -1446,7 +1424,6 @@ bool ensureNetworkReady(bool verbose = true) {
 
 bool sendTelemetryToServer(const String& eventType, const String& severity, bool verbose = true) {
   if (!ensureNetworkReady(verbose)) {
-    if (verbose) Serial.println("[HTTP] ⚠️ Network not available, skip telemetry");
     return false;
   }
 
@@ -1454,8 +1431,6 @@ bool sendTelemetryToServer(const String& eventType, const String& severity, bool
   HttpClient httpClient(gsmClient, SERVER_HOST, SERVER_PORT);
 
   if (verbose) {
-    Serial.println("[HTTP] 🚀 Sending telemetry to server...");
-    Serial.println("[HTTP] Payload: " + payload);
   }
 
   httpClient.post(TELEMETRY_ENDPOINT, "application/json", payload);
@@ -1464,10 +1439,6 @@ bool sendTelemetryToServer(const String& eventType, const String& severity, bool
   httpClient.stop();
 
   if (verbose) {
-    Serial.print("[HTTP] Status: ");
-    Serial.println(statusCode);
-    Serial.print("[HTTP] Response: ");
-    Serial.println(response);
   }
 
   if (statusCode >= 200 && statusCode < 300) {
@@ -1503,14 +1474,9 @@ void updateEventState(const String& newEvent, const String& newSeverity, bool se
     markTelemetryForImmediateSend();
   }
 
-  Serial.print("[EVENT] Updated event_type=");
-  Serial.print(currentEventType);
-  Serial.print(", severity=");
-  Serial.println(currentSeverity);
 }
 
 void handleSOSCancelledByServer() {
-  Serial.println("[SOS] ⚠️ SOS bị hủy từ server - đưa thiết bị về trạng thái NORMAL");
   systemState = STATE_NORMAL;
   isManualSOS = false;
   sosCancelTime = millis();
@@ -1533,8 +1499,6 @@ void checkSOSStatusFromServer() {
   httpClient.stop();
 
   if (statusCode != 200) {
-    Serial.print("[SOS] ❌ Check failed, status: ");
-    Serial.println(statusCode);
     return;
   }
 
@@ -1560,11 +1524,6 @@ void checkSOSStatusFromServer() {
       }
     }
 
-    Serial.print("[SOS] ✅ Active SOS on server: ");
-    Serial.print(currentSOSId);
-    Serial.print(" (status: ");
-    Serial.print(currentSOSStatus);
-    Serial.println(")");
   } else {
     unsigned long nowMs = millis();
     bool deferServerCancel = (nowMs < ignoreServerCancelUntil) ||
@@ -1573,7 +1532,6 @@ void checkSOSStatusFromServer() {
       (systemState == STATE_COUNTDOWN);
 
     if (deferServerCancel) {
-      Serial.println("[SOS] ⏳ Bỏ qua thông báo hủy từ server (đang đợi xác nhận SOS)");
       return;
     }
 
@@ -1581,7 +1539,6 @@ void checkSOSStatusFromServer() {
       hasActiveSOSOnServer = false;
       handleSOSCancelledByServer();
     } else {
-      Serial.println("[SOS] ℹ️ No active SOS on server");
     }
   }
 }
@@ -1591,22 +1548,14 @@ void checkSOSStatusFromServer() {
 // HÀM GỬI TIN NHẮN VÀ GỌI ĐIỆN (THẬT)
 // ============================================
 void simulateSendSMSAndCall(bool isManual = false) {
-  Serial.println("\n============================================");
   if (isManual) {
-    Serial.println("*** GỬI TIN NHẮN & GỌI ĐIỆN (THỦ CÔNG) ***");
-    Serial.println("*** Mức độ: TRUNG BÌNH (Thấp hơn tự động) ***");
   } else {
-    Serial.println("*** GỬI TIN NHẮN & GỌI ĐIỆN (TỰ ĐỘNG) ***");
-    Serial.println("*** Mức độ: NGHIÊM TRỌNG ***");
   }
-  Serial.println("============================================");
   
   // Đọc thời gian từ DS1307 mỗi lần log
   if (ds1307Initialized) {
     readDS1307Time();
     if (rtcData.valid) {
-      Serial.print("🕐 Thời gian log (RTC): ");
-      Serial.println(getRTCDateTimeString());
     }
   }
   
@@ -1614,102 +1563,41 @@ void simulateSendSMSAndCall(bool isManual = false) {
   updateGPS();
   
   // In thông tin định vị GPS
-  Serial.println("\n📍 THÔNG TIN ĐỊNH VỊ GPS:");
   if (gpsData.valid) {
-    Serial.print("  Vĩ độ: ");
-    Serial.print(gpsData.latitude, 6);
-    Serial.print("° (Lat: ");
-    Serial.print(gpsData.latitude, 6);
-    Serial.println("°)");
-    Serial.print("  Kinh độ: ");
-    Serial.print(gpsData.longitude, 6);
-    Serial.print("° (Lon: ");
-    Serial.print(gpsData.longitude, 6);
-    Serial.println("°)");
     
     if (gpsData.altitude > 0) {
-      Serial.print("  Độ cao: ");
-      Serial.print(gpsData.altitude, 1);
-      Serial.println(" m");
     }
     
     if (gpsData.speed > 0) {
-      Serial.print("  Tốc độ: ");
-      Serial.print(gpsData.speed, 2);
-      Serial.println(" km/h");
     }
     
-    Serial.print("  Số vệ tinh: ");
-    Serial.println(gpsData.satellites);
     
     if (gpsData.hdop < 99.0) {
-      Serial.print("  Độ chính xác (HDOP): ");
-      Serial.print(gpsData.hdop, 2);
       if (gpsData.hdop < 1.0) {
-        Serial.println(" (Excellent)");
       } else if (gpsData.hdop < 2.0) {
-        Serial.println(" (Good)");
       } else if (gpsData.hdop < 5.0) {
-        Serial.println(" (Moderate)");
       } else {
-        Serial.println(" (Poor)");
       }
     }
     
     if (gpsData.course > 0) {
-      Serial.print("  Hướng di chuyển: ");
-      Serial.print(gpsData.course, 1);
-      Serial.println("°");
     }
     
-    Serial.print("  Thời gian GPS (UTC): ");
-    Serial.print(gpsData.time);
-    Serial.print(" - Ngày: ");
-    Serial.println(gpsData.date);
     
     // Hiển thị thời gian từ RTC
     if (rtcData.valid) {
-      Serial.print("  Thời gian RTC (Local): ");
-      Serial.println(getRTCDateTimeString());
     }
     
     // Tạo link Google Maps
-    Serial.print("  Link Google Maps: ");
-    Serial.print("https://www.google.com/maps?q=");
-    Serial.print(gpsData.latitude, 6);
-    Serial.print(",");
-    Serial.println(gpsData.longitude, 6);
   } else {
-    Serial.println("  ⚠️ Không có tín hiệu GPS!");
-    Serial.println("  Vị trí: Không xác định");
-    Serial.println("  (GPS đang chờ lock vệ tinh)");
   }
   
   // In trạng thái cảnh báo
-  Serial.println("\n🚨 TRẠNG THÁI CẢNH BÁO:");
   if (isManual) {
-    Serial.println("  Loại: CẢNH BÁO THỦ CÔNG");
-    Serial.println("  Mức độ: TRUNG BÌNH");
-    Serial.println("  (Người dùng nhấn nút SOS thủ công)");
   } else {
-    Serial.println("  Loại: TAI NẠN XE");
-    Serial.println("  Mức độ: NGHIÊM TRỌNG");
-    Serial.println("  (Hệ thống tự động phát hiện)");
   }
-  Serial.print("  G-force: ");
-  Serial.print(imuData.g_total, 2);
-  Serial.println(" g");
-  Serial.print("  Góc nghiêng: Roll=");
-  Serial.print(imuData.roll, 1);
-  Serial.print("°, Pitch=");
-  Serial.print(imuData.pitch, 1);
-  Serial.println("°");
-  Serial.print("  Delta Angle: ");
-  Serial.print(imuData.deltaAngle, 1);
-  Serial.println("°");
   
   // Gửi SMS thật
-  Serial.println("\n📱 GỬI TIN NHẮN SMS:");
   String smsMessage = "";
   if (isManual) {
     smsMessage = "[SOS MANUAL] CANH BAO THU CONG!";
@@ -1738,69 +1626,25 @@ void simulateSendSMSAndCall(bool isManual = false) {
   
   bool smsResult = sendRealSMS(String(PHONE_NUMBER), smsMessage);
   if (smsResult) {
-    Serial.println("  ✓ Tin nhắn đã được gửi thành công!");
   } else {
-    Serial.println("  ✗ Gửi tin nhắn thất bại!");
   }
   
   // Gọi điện thật
-  Serial.println("\n📞 GỌI ĐIỆN:");
   bool callResult = makeRealCall(String(PHONE_NUMBER));
   if (callResult) {
-    Serial.println("  ✓ Cuộc gọi đã được thực hiện");
-    Serial.println("  (Cuộc gọi sẽ tự động kết thúc sau một khoảng thời gian)");
   } else {
-    Serial.println("  ✗ Gọi điện thất bại!");
   }
   
   // Mô phỏng gửi đến server
-  Serial.println("\n🌐 MÔ PHỎNG GỬI ĐẾN SERVER:");
-  Serial.println("  Đang kết nối WiFi/Internet...");
-  Serial.println("  ✓ Đã kết nối");
-  Serial.println("  Đang gửi HTTP POST request...");
-  Serial.println("  Endpoint: https://api.example.com/sos");
-  Serial.println("  Payload:");
-  Serial.println("    {");
   if (isManual) {
-    Serial.println("      \"type\": \"MANUAL_SOS\",");
-    Serial.println("      \"severity\": \"MEDIUM\",");
   } else {
-    Serial.println("      \"type\": \"CRASH\",");
-    Serial.println("      \"severity\": \"HIGH\",");
   }
   if (gpsData.valid) {
-    Serial.print("      \"latitude\": ");
-    Serial.print(gpsData.latitude, 6);
-    Serial.println(",");
-    Serial.print("      \"longitude\": ");
-    Serial.print(gpsData.longitude, 6);
-    Serial.println(",");
   }
-  Serial.print("      \"g_force\": ");
-  Serial.print(imuData.g_total, 2);
-  Serial.println(",");
-  Serial.print("      \"roll\": ");
-  Serial.print(imuData.roll, 1);
-  Serial.println(",");
-  Serial.print("      \"pitch\": ");
-  Serial.print(imuData.pitch, 1);
-  Serial.println(",");
-  Serial.print("      \"delta_angle\": ");
-  Serial.print(imuData.deltaAngle, 1);
-  Serial.println(",");
   if (rtcData.valid) {
-    Serial.print("      \"timestamp\": \"");
-    Serial.print(getRTCDateTimeString());
-    Serial.println("\"");
   } else {
-    Serial.println("      \"timestamp\": null");
   }
-  Serial.println("    }");
-  Serial.println("  ✓ Dữ liệu đã được gửi đến server thành công!");
   
-  Serial.println("\n============================================");
-  Serial.println("✓ TẤT CẢ THÔNG TIN ĐÃ ĐƯỢC GỬI!");
-  Serial.println("============================================\n");
 }
 
 // ============================================
@@ -1816,9 +1660,6 @@ bool initSDCard() {
   
   // Kiểm tra dung lượng
   uint64_t cardSize = SD.cardSize() / (1024 * 1024);
-  Serial.print("  Card size: ");
-  Serial.print(cardSize);
-  Serial.println(" MB");
   
   return true;
 }
@@ -1928,9 +1769,7 @@ void writeLogToSD() {
     String logEntry = formatLogEntry();
     logFile.println(logEntry);
     logFile.close();
-    Serial.println("✓ Log written to SD card");
   } else {
-    Serial.println("✗ Error writing to log file");
   }
 }
 
@@ -1945,9 +1784,7 @@ void writeCrashLogToSD(bool isManual) {
     String logEntry = formatCrashLogEntry(isManual);
     crashFile.println(logEntry);
     crashFile.close();
-    Serial.println("✓ CRASH LOG written to SD card immediately!");
   } else {
-    Serial.println("✗ Error writing to crash log file");
   }
 }
 
@@ -1994,7 +1831,6 @@ void saveToEEPROM() {
   }
   
   EEPROM.commit();
-  Serial.println("✓ Đã lưu dữ liệu vào EEPROM");
 }
 
 void loadFromEEPROM() {
@@ -2036,6 +1872,10 @@ void loadFromEEPROM() {
   
   // Đọc countdownTime
   countdownTime = EEPROM.read(addr++);
+  // Validate: nếu giá trị không hợp lệ (0, 255, hoặc ngoài phạm vi 10-60), dùng giá trị mặc định
+  if (countdownTime < 10 || countdownTime > 60) {
+    countdownTime = 30;  // Giá trị mặc định
+  }
   
   // Đọc PHONE_NUMBER (20 bytes)
   for (int i = 0; i < 20; i++) {
@@ -2043,14 +1883,6 @@ void loadFromEEPROM() {
   }
   PHONE_NUMBER[19] = '\0';  // Đảm bảo kết thúc chuỗi
   
-  Serial.println("✓ Đã đọc dữ liệu từ EEPROM");
-  Serial.printf("  DEVICE_ID: %s\n", DEVICE_ID);
-  Serial.printf("  GMAIL: %s\n", GMAIL_ACCOUNT);
-  Serial.printf("  PHONE: %s\n", PHONE_NUMBER);
-  Serial.printf("  G_CRASH: %.2f\n", gCrashThreshold);
-  Serial.printf("  ANGLE_CRASH: %.2f\n", angleCrashThreshold);
-  Serial.printf("  Allow SOS: %s\n", allowSOSSent ? "YES" : "NO");
-  Serial.printf("  Countdown: %d s\n", countdownTime);
 }
 
 // ============================================
@@ -2211,9 +2043,6 @@ void handleSave() {
 }
 
 void initWebServer() {
-  Serial.println("\n============================================");
-  Serial.println("🔧 ĐANG KHỞI TẠO WiFi Access Point...");
-  Serial.println("============================================");
   
   // Tắt WiFi cũ nếu có (đảm bảo clean state)
   WiFi.disconnect(true);
@@ -2235,7 +2064,6 @@ void initWebServer() {
     if (configResult) break;
     delay(100);
   }
-  Serial.printf("WiFi Config: %s\n", configResult ? "OK" : "FAILED");
   
   // Khởi tạo AP với retry logic
   bool apResult = false;
@@ -2244,7 +2072,6 @@ void initWebServer() {
     if (apResult) break;
     delay(200);
   }
-  Serial.printf("WiFi AP Start: %s\n", apResult ? "OK" : "FAILED");
   
   // Đợi để AP khởi động hoàn toàn - Kiểm tra kỹ hơn
   int waitCount = 0;
@@ -2252,7 +2079,6 @@ void initWebServer() {
     delay(100);
     IPAddress testIP = WiFi.softAPIP();
     if (testIP.toString() != "0.0.0.0" && testIP == local_IP) {
-      Serial.println("✓ AP đã sẵn sàng với IP đúng");
       break;
     }
     waitCount++;
@@ -2261,7 +2087,6 @@ void initWebServer() {
   // Kiểm tra lại và khởi động lại nếu cần
   IPAddress finalIP = WiFi.softAPIP();
   if (finalIP.toString() == "0.0.0.0") {
-    Serial.println("⚠️ AP chưa có IP - Thử khởi động lại...");
     WiFi.softAPdisconnect(false);
     delay(200);
     WiFi.softAP(AP_SSID, AP_PASSWORD);
@@ -2277,26 +2102,11 @@ void initWebServer() {
   server.on("/save", HTTP_POST, handleSave);
   server.begin();
   
-  Serial.println("============================================");
-  Serial.println("🌐 WEB INTERFACE SERVER STARTED");
-  Serial.println("============================================");
-  Serial.printf("SSID: %s\n", AP_SSID);
-  Serial.printf("Password: %s\n", AP_PASSWORD);
-  Serial.printf("IP Address: %s\n", finalIP.toString().c_str());
-  Serial.printf("WiFi Status: %s\n", WiFi.status() == WL_CONNECTED ? "CONNECTED" : "AP_MODE");
-  Serial.printf("AP Status: %s\n", WiFi.softAPgetStationNum() >= 0 ? "ACTIVE" : "INACTIVE");
-  Serial.printf("Connected Stations: %d\n", stationCount);
-  Serial.println("Kết nối điện thoại vào WiFi này và mở trình duyệt:");
-  Serial.printf("http://%s hoặc http://192.168.4.1\n", finalIP.toString().c_str());
-  Serial.println("============================================");
-  Serial.println("✓ Web Server đã sẵn sàng và đang chạy!");
-  Serial.println("============================================\n");
 }
 
 void stopWebServer() {
   server.stop();
   WiFi.softAPdisconnect(true);
-  Serial.println("✓ Đã tắt Web Interface Server");
 }
 
 // ============================================
@@ -2305,36 +2115,25 @@ void stopWebServer() {
 void sendSOS(bool isManual = false) {
   // Kiểm tra xem có cho phép gửi SOS không
   if (!allowSOSSent) {
-    Serial.println("============================================");
-    Serial.println("⚠️ SOS bị TẮT - Không gửi tín hiệu");
-    Serial.println("============================================");
     return;
   }
   
-  Serial.println("============================================");
   if (isManual) {
-    Serial.println("*** SOS ACTIVATED (THỦ CÔNG) ***");
   } else {
-    Serial.println("*** SOS ACTIVATED (TỰ ĐỘNG) ***");
   }
-  Serial.println("============================================");
   
-  // Gửi telemetry ngay để server nhận event CRASH
+  // Gửi telemetry lên server (SAU KHI đếm ngược xong)
   markTelemetryForImmediateSend();
   sendTelemetryToServer(currentEventType, currentSeverity, false);
-  Serial.println("[SOS] ⏳ Chờ 5 giây trước khi gửi SMS/gọi điện để đảm bảo gói web đã lên server...");
-  delay(5000);
+  
+  // Chờ một chút để đảm bảo gói web đã lên server trước khi gửi SMS/gọi điện
+  delay(3000);
 
-  // Ghi log va chạm vào SD card NGAY LẬP TỨC
+  // Ghi log va chạm vào SD card
   writeCrashLogToSD(isManual);
   
-  // Gọi hàm mô phỏng gửi tin nhắn và gọi điện
+  // Gửi SMS và gọi điện (SAU KHI đếm ngược xong)
   simulateSendSMSAndCall(isManual);
-  
-  Serial.println("✓ Đã gửi tín hiệu SOS đến server");
-  Serial.println("✓ Đã gửi tin nhắn SOS");
-  Serial.println("✓ Đã gọi điện đến người thân");
-  Serial.println("============================================");
   
   // TODO: Thêm code thực tế để:
   // - Gửi HTTP request đến server
@@ -2393,16 +2192,21 @@ CrashState updateCrashDetection(ImuData &out) {
   out.deltaAngle = deltaAngle;
   
   // 8. LOGIC PHÁT HIỆN TAI NẠN
-  // Chỉ cần 1 trong 2 điều kiện TRUE → CRASH
+  // Cần CẢ HAI điều kiện đồng thời xảy ra → CRASH
+  // Xét G-Force trước, đủ điều kiện thì mới xét góc
   
   // Điều kiện 1: Va chạm mạnh vật lý (dùng biến động từ EEPROM)
   bool crashByGForce = (g_total > gCrashThreshold);
   
-  // Điều kiện 2: Ngã / lật / xoay nhanh (dùng biến động từ EEPROM)
-  bool crashByAngle = (deltaAngle > angleCrashThreshold);
-  
-  if (crashByGForce || crashByAngle) {
-    return CRASH;
+  // Chỉ xét góc nếu G-Force đã đủ điều kiện
+  if (crashByGForce) {
+    // Điều kiện 2: Ngã / lật / xoay nhanh (dùng biến động từ EEPROM)
+    bool crashByAngle = (deltaAngle > angleCrashThreshold);
+    
+    // CẢ HAI điều kiện phải đúng → CRASH
+    if (crashByAngle) {
+      return CRASH;
+    }
   }
   
   return NO_CRASH;
@@ -2465,12 +2269,7 @@ void updateMPUDataOnly(ImuData &out) {
 // SETUP
 // ============================================
 void setup() {
-  Serial.begin(115200);
-  delay(1000);
   
-  Serial.println("============================================");
-  Serial.println("CRASH DETECTION SYSTEM - MPU9250");
-  Serial.println("============================================");
   
   // Khởi tạo EEPROM và đọc dữ liệu
   EEPROM.begin(EEPROM_SIZE);
@@ -2478,6 +2277,10 @@ void setup() {
   
   // Đảm bảo systemState luôn là STATE_NORMAL khi khởi động
   systemState = STATE_NORMAL;
+  
+  // Khởi tạo I2C với SDA/SCL tùy chỉnh (cho DS1307 và MPU9250)
+  Wire.begin(I2C_SDA, I2C_SCL);
+  delay(100);
   
   // Khởi tạo OLED SSD1306
   u8g2.begin();
@@ -2488,7 +2291,6 @@ void setup() {
   delay(500);
   
   if (!initMPU9250()) {
-    Serial.println("ERROR: Cannot initialize MPU9250!");
     while(1) delay(1000);
   }
   
@@ -2504,13 +2306,6 @@ void setup() {
   // ============================================
   // KHỞI TẠO WiFi WEB SERVER (SAU NÚT NHẤN)
   // ============================================
-  Serial.println("\n============================================");
-  Serial.println("🌐 TỰ ĐỘNG MỞ WEB SETTING MODE");
-  Serial.println("============================================");
-  Serial.println("Web Setting sẽ tự động mở khi khởi động");
-  Serial.println("Giữ nút 36 trong 3 giây để xác nhận và thoát");
-  Serial.println("Hoặc đợi 3 phút để tự động vào phần chính");
-  Serial.println("============================================\n");
   
   // Tự động kích hoạt Web Setting
   webSettingActive = true;
@@ -2546,32 +2341,18 @@ void setup() {
   lastGPSTime = 0;
   hasLastGPSPoint = false;
   
-  Serial.println("GPS NEO-8M initialized với HardwareSerial + TinyGPS++");
-  Serial.print("  RX pin: ");
-  Serial.print(GPS_RX_PIN);
-  Serial.print(" (nhận từ TX của GPS)");
-  Serial.print(", TX pin: ");
-  Serial.print(GPS_TX_PIN);
-  Serial.println(" (gửi đến RX của GPS)");
-  Serial.println("Đang chờ tín hiệu GPS...");
-  Serial.println("(Cần thời gian để GPS lock vệ tinh - có thể mất vài phút)");
   
   // Khởi tạo DS1307 RTC
-  Serial.println("\nInitializing DS1307 RTC...");
   if (initDS1307()) {
     ds1307Initialized = true;
     readDS1307Time();  // Đọc thời gian lần đầu
     if (rtcData.valid) {
-      Serial.print("  Thời gian hiện tại: ");
-      Serial.println(getRTCDateTimeString());
     }
   } else {
     ds1307Initialized = false;
-    Serial.println("  ⚠️ DS1307 không khả dụng, sẽ không có thời gian RTC");
   }
   
   // Khởi tạo DHT11
-  Serial.println("\nInitializing DHT11...");
   dht.begin();
   dhtData.valid = false;
   dhtData.temperature = 0;
@@ -2580,29 +2361,18 @@ void setup() {
   delay(2000);  // DHT11 cần thời gian khởi động
   updateDHT();  // Đọc lần đầu
   if (dhtData.valid) {
-    Serial.print("  ✓ DHT11 initialized - Temp: ");
-    Serial.print(dhtData.temperature, 1);
-    Serial.print("°C, Humidity: ");
-    Serial.print(dhtData.humidity, 1);
-    Serial.println("%");
   } else {
-    Serial.println("  ⚠️ DHT11 không khả dụng, kiểm tra kết nối");
   }
   
   // Khởi tạo SIM 4G
-  Serial.println("\nInitializing SIM 4G module...");
   initSIMModule();
   if (sim4gInitialized) {
-    Serial.println("  ✓ SIM 4G initialized successfully");
   } else {
-    Serial.println("  ⚠️ SIM 4G không khả dụng, kiểm tra kết nối và SIM card");
   }
   
   // Khởi tạo SD Card
-  Serial.println("\nInitializing SD card...");
   if (initSDCard()) {
     sdCardInitialized = true;
-    Serial.println("✓ SD card initialized successfully!");
     // Ghi header vào file log
     File logFile = SD.open(LOG_FILE, FILE_WRITE);
     if (logFile) {
@@ -2615,10 +2385,8 @@ void setup() {
       crashFile.println("Time,Type,Ax,Ay,Az,G_Total,Roll,Pitch,DeltaAngle,Lat,Lon,Alt,Speed,Satellites,GoogleMapsLink,Temperature,Humidity");
       crashFile.close();
     }
-    Serial.println("✓ SD card logging ready!");
   } else {
     sdCardInitialized = false;
-    Serial.println("NO SD CARD");
   }
   
   lastSampleTime = millis();
@@ -2627,11 +2395,6 @@ void setup() {
   
   isManualSOS = false;  // Khởi tạo flag
   
-  Serial.println("System ready!");
-  Serial.println("Format: Ax Ay Az | G_total | Roll Pitch | DeltaAngle | Status");
-  Serial.println("Nút 36: Ấn chậm (>=1s) để hủy SOS trong 30 giây");
-  Serial.println("Nút 37: Ấn chậm (>=1s) để gửi SOS thủ công (mức độ trung bình)");
-  Serial.println("============================================");
 }
 
 // ============================================
@@ -2657,14 +2420,11 @@ void loop() {
       IPAddress currentIP = WiFi.softAPIP();
       if (currentIP.toString() == "0.0.0.0" || WiFi.softAPgetStationNum() < 0) {
         // WiFi AP bị mất - Khởi động lại
-        Serial.println("⚠️ WiFi AP bị mất - Đang khởi động lại...");
         WiFi.softAPdisconnect(false);
         delay(100);
         bool apResult = WiFi.softAP(AP_SSID, AP_PASSWORD);
         if (apResult) {
-          Serial.println("✓ WiFi AP đã được khởi động lại thành công");
         } else {
-          Serial.println("✗ Không thể khởi động lại WiFi AP");
         }
       }
     }
@@ -2684,7 +2444,6 @@ void loop() {
       systemState = STATE_NORMAL;
       webSettingExitTime = now;
       justExitedWebSetting = true;
-      Serial.println("✓ Timeout 3 phút - Tự động lưu và thoát Web Setting mode");
       return;
     }
     
@@ -2712,7 +2471,6 @@ void loop() {
         webSettingExitTime = now;
         justExitedWebSetting = true;
         button36WasPressed = false;  // Reset
-        Serial.println("✓ Đã lưu và thoát Web Setting mode (giữ nút 3s)");
         return;
       }
     }
@@ -2727,6 +2485,15 @@ void loop() {
     // KHÔNG chạy bất kỳ hàm nào khác (GPS, DHT, Crash Detection, v.v.)
     // CHỈ phục vụ web server
     return;
+  }
+  
+  // Cập nhật RTC thời gian định kỳ (mỗi giây)
+  static unsigned long lastRTCUpdate = 0;
+  if (now - lastRTCUpdate >= 1000) {
+    if (ds1307Initialized) {
+      readDS1307Time();
+    }
+    lastRTCUpdate = now;
   }
   
   // Cập nhật GPS liên tục
@@ -2766,11 +2533,7 @@ void loop() {
           countdownStartTime = now;
           remainingSeconds = countdownTime;
           isManualSOS = false;  // SOS tự động
-          Serial.println("============================================");
-          Serial.println("*** CRASH DETECTED - COUNTDOWN STARTED ***");
-          Serial.println("Ấn nút 36 (3-10s) để hủy SOS");
-          Serial.println("============================================");
-          String severity = determineCrashSeverity(false, imuData.g_total);
+          String severity = determineCrashSeverity(false, imuData.g_total, imuData.deltaAngle);
           updateEventState("CRASH", severity, true);
         }
         
@@ -2784,12 +2547,7 @@ void loop() {
             countdownStartTime = now;
             remainingSeconds = countdownTime;
             isManualSOS = true;  // SOS thủ công
-            Serial.println("============================================");
-            Serial.println("*** SOS THỦ CÔNG - COUNTDOWN STARTED ***");
-            Serial.println("Người dùng nhấn nút 37 (ấn chậm >=1s)");
-            Serial.println("Ấn nút 36 (>=3s) để hủy SOS");
-            Serial.println("============================================");
-            String severity = determineCrashSeverity(true, imuData.g_total);
+            String severity = determineCrashSeverity(true, imuData.g_total, imuData.deltaAngle);
             updateEventState("CRASH", severity, true);
           }
         }
@@ -2829,15 +2587,9 @@ void loop() {
         if (newRemaining != remainingSeconds && newRemaining >= 0) {
           remainingSeconds = newRemaining;
           if (remainingSeconds > 0) {
-            Serial.print("⏰ SOS ");
             if (isManualSOS) {
-              Serial.print("(THỦ CÔNG) ");
             } else {
-              Serial.print("(TỰ ĐỘNG) ");
             }
-            Serial.print("trong: ");
-            Serial.print(remainingSeconds);
-            Serial.println(" giây...");
           }
         }
         
@@ -2860,11 +2612,6 @@ void loop() {
             // Dừng buzzer
             buzzerState = false;
             digitalWrite(BUZZER_PIN, LOW);
-            Serial.println("============================================");
-            Serial.println("✓ SOS ĐÃ ĐƯỢC HỦY");
-            Serial.println("Hệ thống quay về trạng thái bình thường");
-            Serial.println("Cooldown 3 giây để tránh trigger lại");
-            Serial.println("============================================");
             updateEventState("NORMAL", "LOW", true);
             break;
           } else if (button36State == 1) {
@@ -2938,41 +2685,19 @@ void loop() {
     lastPrintTime = now;
     
     // In dữ liệu
-    Serial.print("A: ");
-    Serial.print(imuData.ax, 2);
-    Serial.print(" ");
-    Serial.print(imuData.ay, 2);
-    Serial.print(" ");
-    Serial.print(imuData.az, 2);
-    Serial.print(" | G: ");
-    Serial.print(imuData.g_total, 2);
-    Serial.print(" | R: ");
-    Serial.print(imuData.roll, 1);
-    Serial.print(" P: ");
-    Serial.print(imuData.pitch, 1);
-    Serial.print(" | Δ: ");
-    Serial.print(imuData.deltaAngle, 1);
-    Serial.print(" | ");
     
     // In trạng thái
     switch (systemState) {
       case STATE_NORMAL:
         if (crashState == CRASH) {
-          Serial.println("CRASH");
         } else {
-          Serial.println("NO_CRASH");
         }
         break;
       case STATE_CRASH_DETECTED:
-        Serial.println("CRASH_DETECTED");
         break;
       case STATE_COUNTDOWN:
-        Serial.print("COUNTDOWN (");
-        Serial.print(remainingSeconds);
-        Serial.println("s)");
         break;
       case STATE_SOS_SENT:
-        Serial.println("SOS_SENT");
         break;
     }
   }

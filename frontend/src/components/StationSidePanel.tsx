@@ -263,13 +263,15 @@ export default function StationSidePanel({
                     )}
                     <div className="flex flex-wrap gap-2">
                       {sos.status === 'pending' && (() => {
-                        const countdown =
-                          sos.assignedStationId === profile.id
-                            ? getAssignmentCountdown(sos)
-                            : null;
+                        // Chỉ trạm được gán mới có quyền tự quyết (nút "Nhận nhiệm vụ" với đếm ngược)
+                        const isAssignedToThisStation = sos.assignedStationId === profile.id;
+                        const countdown = isAssignedToThisStation
+                          ? getAssignmentCountdown(sos)
+                          : null;
                         const claimWindowActive = countdown ? countdown.diff > 0 : false;
 
-                        if (sos.assignedStationId === profile.id && claimWindowActive) {
+                        // Trạm được gán và còn thời gian → có quyền tự quyết
+                        if (isAssignedToThisStation && claimWindowActive) {
                           return (
                             <>
                               <button
@@ -296,6 +298,7 @@ export default function StationSidePanel({
                           );
                         }
 
+                        // Các trạm khác (không được gán hoặc hết thời gian) → chỉ có quyền "Sẵn sàng hỗ trợ"
                         const isReady = sos.readyStationIds?.includes(profile.id) || false;
                         return (
                           <button
@@ -307,11 +310,12 @@ export default function StationSidePanel({
                             className={`text-[10px] sm:text-xs px-2 sm:px-3 py-1 rounded transition ${
                               isReady
                                 ? 'bg-yellow-500 text-white hover:bg-yellow-600'
-                                : 'bg-green-500 text-white hover:bg-green-600'
+                                : 'bg-blue-500 text-white hover:bg-blue-600'
                             }`}
+                            title={isReady ? 'Bạn đã được ưu tiên! Khi trạm được gán không nhận, bạn sẽ được ưu tiên theo khoảng cách.' : 'Bấm để được ưu tiên khi reassign'}
                           >
                             <span className="truncate">
-                              {isReady ? '🟡 Sẵn sàng nhận nhiệm vụ' : '🟢 Nhận nhiệm vụ'}
+                              {isReady ? '🟡 Sẵn sàng hỗ trợ' : '🔵 Sẵn sàng hỗ trợ'}
                             </span>
                           </button>
                         );
